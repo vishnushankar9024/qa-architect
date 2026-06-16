@@ -8,6 +8,7 @@ from app import __version__
 from app.config import get_settings
 from app.discovery import discover_router
 from app.discovery import router as discovery_router
+from app.features import router as features_router
 from app.github import router as github_router
 from app.knowledge import router as knowledge_router
 from app.models.common import HealthStatus
@@ -49,6 +50,7 @@ def create_app() -> FastAPI:
 
     app.include_router(discovery_router)
     app.include_router(discover_router)
+    app.include_router(features_router)
     app.include_router(knowledge_router)
     app.include_router(qa_router)
     app.include_router(github_router)

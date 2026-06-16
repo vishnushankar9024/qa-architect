@@ -64,6 +64,8 @@ optional for the scaffold.
 | GET | `/discovery/repositories` | List known repositories. |
 | POST | `/discover` | Clone a GitHub repo and return a deterministic discovery result (also writes `outputs/application.json`). |
 | GET | `/application` | Return the saved `outputs/application.json` discovery artifact. |
+| POST | `/features` | Group `application.json` into business features (writes `outputs/feature-inventory.json`). |
+| GET | `/features` | Return the saved `outputs/feature-inventory.json` feature inventory. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
@@ -123,6 +125,39 @@ consume this artifact instead of re-reading the repository:
 ```bash
 curl http://localhost:8000/application   # returns the saved application.json
 ```
+
+## Feature Discovery (`POST /features`)
+
+The second stage. It **consumes `outputs/application.json` only** — it never
+reads or clones the repository and makes no LLM calls. It deterministically
+groups `modules`, `routes`, `apis`, and `collections` into business features by
+reducing each artifact to a canonical feature key (first meaningful path/name
+segment, singularized, with auth/role synonyms collapsed).
+
+```bash
+curl -X POST http://localhost:8000/features    # builds outputs/feature-inventory.json
+curl http://localhost:8000/features            # returns the saved inventory
+```
+
+Output shape (`outputs/feature-inventory.json`):
+
+```json
+{
+  "features": [
+    {
+      "name": "User Management",
+      "modules": [],
+      "routes": [],
+      "apis": [],
+      "collections": []
+    }
+  ]
+}
+```
+
+Artifacts that carry no business token (e.g. `/`, `:id`) are collected under a
+`General` feature, listed last. Run `POST /discover` first so `application.json`
+exists.
 
 ## Testing
 
