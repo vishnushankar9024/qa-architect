@@ -5,6 +5,42 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 
+class DiscoverRequest(BaseModel):
+    """Request body for the ``POST /discover`` endpoint."""
+
+    repo_url: str = Field(
+        ...,
+        description="GitHub repository URL to clone and analyze.",
+        examples=["https://github.com/octocat/Hello-World"],
+    )
+    branch: str | None = Field(
+        None,
+        description="Optional branch/ref to clone (defaults to the repo's default branch).",
+    )
+
+
+class DiscoveryResult(BaseModel):
+    """Deterministic discovery result for a repository.
+
+    Field shape matches the QA Architect discovery contract.
+    """
+
+    application: str = Field("", description="Application/repository name.")
+    technology: list[str] = Field(
+        default_factory=list,
+        description="Detected technologies (e.g. Angular, React, NodeJS, Python, MongoDB).",
+    )
+    modules: list[str] = Field(default_factory=list, description="Discovered modules.")
+    routes: list[str] = Field(default_factory=list, description="Discovered frontend routes.")
+    apis: list[str] = Field(default_factory=list, description="Discovered backend API endpoints.")
+    services: list[str] = Field(default_factory=list, description="Discovered services.")
+    collections: list[str] = Field(
+        default_factory=list,
+        description="Discovered MongoDB collections/models.",
+    )
+    roles: list[str] = Field(default_factory=list, description="Discovered roles.")
+
+
 class RepositoryFile(BaseModel):
     """A single file discovered within a repository."""
 

@@ -21,6 +21,9 @@ served through `main.py` (`uvicorn main:app`).
 Current endpoints (all placeholders):
 
 - `GET /` and `GET /health` — service health.
+- `POST /discover` — clone a GitHub repo and return a deterministic discovery
+  result (`technology`, `modules`, `routes`, `apis`, `services`, `collections`,
+  `roles`). Implemented in `app/discovery/` (`cloner.py` + `analyzer.py`).
 - `GET /discovery/repositories` — list known repositories.
 - `GET /knowledge/entries` — list knowledge entries.
 - `GET /qa/test-plan?repository=<full_name>` — build a placeholder test plan.

@@ -62,9 +62,52 @@ optional for the scaffold.
 | GET | `/` | Service health. |
 | GET | `/health` | Liveness/readiness probe. |
 | GET | `/discovery/repositories` | List known repositories. |
+| POST | `/discover` | Clone a GitHub repo and return a deterministic discovery result. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
+
+## Repository Discovery (`POST /discover`)
+
+The first capability. Given a GitHub repository URL, QA Architect shallow-clones
+the repo and runs **deterministic** (no-AI) analysis to detect the technology
+stack and structure.
+
+Request:
+
+```bash
+curl -X POST http://localhost:8000/discover \
+  -H 'Content-Type: application/json' \
+  -d '{"repo_url": "https://github.com/mongodb-developer/mongodb-with-fastapi"}'
+```
+
+Response shape:
+
+```json
+{
+  "application": "",
+  "technology": [],
+  "modules": [],
+  "routes": [],
+  "apis": [],
+  "services": [],
+  "collections": [],
+  "roles": []
+}
+```
+
+- **technology** — any of `Angular`, `React`, `NodeJS`, `Python`, `MongoDB`.
+- **modules** — Angular/Nest `*.module.ts` and Python packages.
+- **routes** — frontend routes (Angular Router / React Router).
+- **apis** — backend endpoints (Express / FastAPI / Flask), as `METHOD path`.
+- **services** — Angular/Nest `*.service.ts` and `*Service` classes.
+- **collections** — MongoDB collections/models (Mongoose / mongoengine / PyMongo).
+- **roles** — best-effort role identifiers.
+
+`services` is included in addition to the keys shown in the original spec so the
+discovered services (requirement #4) are surfaced. Optional `branch` may be
+supplied in the request body. A configured `QA_ARCHITECT_GITHUB_TOKEN` is used
+for private `github.com` repositories.
 
 ## Testing
 
