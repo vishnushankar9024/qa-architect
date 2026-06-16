@@ -2,17 +2,27 @@
 
 ## Implementation preferences
 
-Standing guidance for implementation/coding tasks in this repo:
+Standing guidance for implementation/coding tasks in this repo.
 
-- **Models**: do NOT use Opus unless explicitly requested; prefer GPT-5 (use the
-  latest GPT-5 family) for implementation tasks and any subagents spawned for
-  coding/analysis.
-- **Deterministic parsing**: implement stages with deterministic parsing/rules;
-  no LLM calls in the pipeline.
-- **Avoid repository re-scans**: only the Discovery stage may scan/clone a repo.
-- **Reuse artifacts**: downstream stages consume the previous stage's artifact
-  (see the Artifact First Rule below); never re-read a repo when its artifact
-  already exists.
+### Model selection policy
+
+- **GPT-5.5 is the default model.** Use it for: FastAPI development, refactoring,
+  Pydantic models, the Discovery/Features/Domains/Traceability stages, tests,
+  documentation, bug fixes, and repository analysis.
+- **Claude Opus only when explicitly requested**, and only for: major
+  architecture reviews, business-rule generation, complex reasoning across
+  multiple artifacts, test-strategy design, and large-scale design decisions.
+- **Never auto-select a more expensive model.** Default to GPT-5.5 unless
+  instructed otherwise.
+
+### Engineering preferences
+
+- **Prefer deterministic implementations** over LLM-based ones whenever possible;
+  the pipeline has no LLM calls.
+- **Minimize token consumption**: reuse artifacts, avoid repository re-scans
+  (only the Discovery stage may scan/clone — see the Artifact First Rule below),
+  keep tasks narrowly scoped, and do not redesign architecture unless explicitly
+  requested.
 
 ## Cursor Cloud specific instructions
 
