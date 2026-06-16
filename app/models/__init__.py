@@ -11,6 +11,7 @@ from app.models.discovery import (
 from app.models.domain import Domain, DomainModel
 from app.models.feature import Feature, FeatureInventory
 from app.models.knowledge import KnowledgeEntry
+from app.models.traceability import DomainTrace, FeatureTrace, TraceabilityModel
 from app.models.qa import TestCase, TestPlan
 
 __all__ = [
@@ -25,6 +26,9 @@ __all__ = [
     "FeatureInventory",
     "Domain",
     "DomainModel",
+    "FeatureTrace",
+    "DomainTrace",
+    "TraceabilityModel",
     "KnowledgeEntry",
     "TestCase",
     "TestPlan",

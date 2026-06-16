@@ -69,6 +69,8 @@ optional for the scaffold.
 | GET | `/features` | Return the saved `outputs/feature-inventory.json` feature inventory. |
 | POST | `/domains` | Group `feature-inventory.json` into business domains (writes `outputs/domain-model.json`). |
 | GET | `/domains` | Return the saved `outputs/domain-model.json` domain model. |
+| POST | `/traceability` | Join discovery/feature/domain artifacts into a domain→feature→relationships graph (writes `outputs/traceability.json`). |
+| GET | `/traceability` | Return the saved `outputs/traceability.json` graph. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
@@ -190,6 +192,53 @@ Output shape (`outputs/domain-model.json`):
 
 Run `POST /features` first so `feature-inventory.json` exists (enforced by the
 Artifact First Rule).
+
+## Traceability Engine (`POST /traceability`)
+
+The fourth stage. It **consumes `application.json` + `feature-inventory.json` +
+`domain-model.json` only** (no repo reads/clones, no LLM) and builds a nested
+graph:
+
+```
+Domain -> Feature -> { routes, components, services, apis, collections }
+```
+
+Routes/apis/collections come from the feature inventory; components come from the
+Angular component hierarchy in `application.json`; services come from
+`application.json`. Cross-artifact joins use a normalized feature key (lowercased,
+"management" dropped, non-alphanumerics removed) with prefix matching so naming
+differences across stages (e.g. `auth` ↔ `Authentication`) still line up. The
+join is intentionally inclusive.
+
+```bash
+curl -X POST http://localhost:8000/traceability   # builds outputs/traceability.json
+curl http://localhost:8000/traceability           # returns the saved graph
+```
+
+Output shape (`outputs/traceability.json`):
+
+```json
+{
+  "domains": [
+    {
+      "name": "Opportunity Management",
+      "features": [
+        {
+          "name": "Opportunityhub Management",
+          "routes": ["opportunity", "opportunity-hub/:id/details"],
+          "components": [],
+          "services": [],
+          "apis": [],
+          "collections": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+Run `POST /domains` (and its upstream stages) first; enforced by the Artifact
+First Rule.
 
 ## Testing
 

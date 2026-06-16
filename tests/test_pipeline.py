@@ -23,6 +23,7 @@ def test_pipeline_chain_order() -> None:
         "discovery",
         "features",
         "domains",
+        "traceability",
         "business-rules",
         "test-strategy",
         "test-scenarios",
@@ -32,6 +33,7 @@ def test_pipeline_chain_order() -> None:
         "application.json",
         "feature-inventory.json",
         "domain-model.json",
+        "traceability.json",
         "business-rules.json",
         "test-strategy.json",
         "test-scenarios.json",
@@ -47,7 +49,8 @@ def test_previous_artifact_mapping() -> None:
     assert pipeline.previous_artifact("discovery") is None
     assert pipeline.previous_artifact("features") == "application.json"
     assert pipeline.previous_artifact("domains") == "feature-inventory.json"
-    assert pipeline.previous_artifact("business-rules") == "domain-model.json"
+    assert pipeline.previous_artifact("traceability") == "domain-model.json"
+    assert pipeline.previous_artifact("business-rules") == "traceability.json"
     assert pipeline.previous_artifact("test-strategy") == "business-rules.json"
     assert pipeline.previous_artifact("test-scenarios") == "test-strategy.json"
 
@@ -84,6 +87,7 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
         "discovery",
         "features",
         "domains",
+        "traceability",
         "business-rules",
         "test-strategy",
         "test-scenarios",
@@ -91,6 +95,7 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
     # Implemented flags are reported.
     impl = {s["stage"]: s["implemented"] for s in status["stages"]}
     assert impl["discovery"] and impl["features"] and impl["domains"]
+    assert impl["traceability"]
     assert not impl["business-rules"]
 
     # After the discovery artifact exists, features becomes the next stage.
@@ -100,9 +105,15 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
     assert status["completed_stages"] == ["discovery"]
     assert status["next_stage"] == "features"
 
-    # After features + domains artifacts exist, no implemented stage remains.
+    # After features + domains artifacts exist, traceability is next.
     (artifact_dir / "feature-inventory.json").write_text("{}", encoding="utf-8")
     (artifact_dir / "domain-model.json").write_text("{}", encoding="utf-8")
     status = client.get("/pipeline-status").json()
     assert status["completed_stages"] == ["discovery", "features", "domains"]
+    assert status["next_stage"] == "traceability"
+
+    # Once traceability also exists, no implemented stage remains.
+    (artifact_dir / "traceability.json").write_text("{}", encoding="utf-8")
+    status = client.get("/pipeline-status").json()
+    assert status["completed_stages"] == ["discovery", "features", "domains", "traceability"]
     assert status["next_stage"] is None

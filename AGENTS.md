@@ -3,9 +3,10 @@
 ## Cursor Cloud specific instructions
 
 QA Architect is a Python 3.12 + FastAPI + Pydantic service. Discovery (`POST
-/discover`), Feature Discovery (`POST /features`), and Domain Discovery (`POST
-/domains`) are implemented with deterministic parsing; `knowledge`/`qa`/`github`
-remain placeholders. AI/LLM features are intentionally not implemented yet.
+/discover`), Feature Discovery (`POST /features`), Domain Discovery (`POST
+/domains`), and the Traceability Engine (`POST /traceability`) are implemented
+with deterministic parsing; `knowledge`/`qa`/`github` remain placeholders.
+AI/LLM features are intentionally not implemented yet.
 
 ### Services
 
@@ -22,7 +23,8 @@ There is a single service: the FastAPI API.
 - `outputs/` is git-ignored except for `.gitkeep`.
 - **Artifact First Rule**: QA Architect is a staged artifact pipeline
   (`application.json` → `feature-inventory.json` → `domain-model.json` →
-  `business-rules.json` → `test-strategy.json` → `test-scenarios.json`). Each stage must consume the
+  `traceability.json` → `business-rules.json` → `test-strategy.json` →
+  `test-scenarios.json`). Each stage must consume the
   previous stage's artifact; **only the Discovery stage may scan/clone a
   repository**. Never re-read/re-clone a repo when its artifact already exists.
   The chain, artifact names, and enforcement helpers live in `app/pipeline.py`

@@ -10,6 +10,7 @@ AI features are intentionally **not** implemented yet.
 | Discovery | `app/discovery` | Locate and scan repositories. |
 | Features | `app/features` | Group discovery artifacts into business features. |
 | Domains | `app/domains` | Group features into business domains. |
+| Traceability | `app/traceability` | Join artifacts into a domain→feature→relationships graph. |
 | Knowledge | `app/knowledge` | Store and retrieve project knowledge. |
 | QA | `app/qa` | Build test plans and test cases. |
 | GitHub | `app/github` | GitHub integration / API access. |
@@ -24,6 +25,7 @@ the previous stage**, and stages write their own artifact under `outputs/`:
 application.json        (Discovery)
   -> feature-inventory.json   (Feature Discovery)
   -> domain-model.json        (Domain Discovery)
+  -> traceability.json        (Traceability Engine)
   -> business-rules.json      (Business Rules — not implemented yet)
   -> test-strategy.json       (Test Strategy — not implemented yet)
   -> test-scenarios.json      (Test Scenarios — not implemented yet)
@@ -74,6 +76,12 @@ Current endpoints (all placeholders):
   business domains via a keyword taxonomy, written to `outputs/domain-model.json`.
   Implemented in `app/domains/` (`grouping.py` + `service.py` + `artifacts.py`).
 - `GET /domains` — return the saved `outputs/domain-model.json` artifact.
+- `POST /traceability` — traceability stage. Consumes `application.json` +
+  `feature-inventory.json` + `domain-model.json` only (no repo reads/clones, no
+  LLM) and joins them into a `Domain -> Feature -> {routes, components, services,
+  apis, collections}` graph, written to `outputs/traceability.json`. Implemented
+  in `app/traceability/` (`engine.py` + `service.py` + `artifacts.py`).
+- `GET /traceability` — return the saved `outputs/traceability.json` artifact.
 - `GET /discovery/repositories` — list known repositories.
 - `GET /knowledge/entries` — list knowledge entries.
 - `GET /qa/test-plan?repository=<full_name>` — build a placeholder test plan.
