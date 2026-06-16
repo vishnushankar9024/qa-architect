@@ -1,5 +1,19 @@
 # AGENTS.md
 
+## Implementation preferences
+
+Standing guidance for implementation/coding tasks in this repo:
+
+- **Models**: do NOT use Opus unless explicitly requested; prefer GPT-5 (use the
+  latest GPT-5 family) for implementation tasks and any subagents spawned for
+  coding/analysis.
+- **Deterministic parsing**: implement stages with deterministic parsing/rules;
+  no LLM calls in the pipeline.
+- **Avoid repository re-scans**: only the Discovery stage may scan/clone a repo.
+- **Reuse artifacts**: downstream stages consume the previous stage's artifact
+  (see the Artifact First Rule below); never re-read a repo when its artifact
+  already exists.
+
 ## Cursor Cloud specific instructions
 
 QA Architect is a Python 3.12 + FastAPI + Pydantic service. Discovery (`POST
