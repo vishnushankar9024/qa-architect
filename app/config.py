@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     environment: str = "development"
     debug: bool = True
 
+    # Directory where QA Architect writes reusable artifacts (e.g.
+    # ``application.json`` produced by repository discovery). Relative paths are
+    # resolved against the current working directory.
+    output_dir: str = "outputs"
+
     # GitHub integration. Token is optional so the app can boot without it;
     # endpoints that need it will report that it is missing.
     github_token: str | None = None

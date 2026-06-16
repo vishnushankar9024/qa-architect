@@ -62,7 +62,8 @@ optional for the scaffold.
 | GET | `/` | Service health. |
 | GET | `/health` | Liveness/readiness probe. |
 | GET | `/discovery/repositories` | List known repositories. |
-| POST | `/discover` | Clone a GitHub repo and return a deterministic discovery result. |
+| POST | `/discover` | Clone a GitHub repo and return a deterministic discovery result (also writes `outputs/application.json`). |
+| GET | `/application` | Return the saved `outputs/application.json` discovery artifact. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
@@ -89,25 +90,39 @@ Response shape:
   "technology": [],
   "modules": [],
   "routes": [],
+  "controllers": [],
   "apis": [],
   "services": [],
   "collections": [],
-  "roles": []
+  "roles": [],
+  "config_files": []
 }
 ```
 
 - **technology** — any of `Angular`, `React`, `NodeJS`, `Python`, `MongoDB`.
 - **modules** — Angular/Nest `*.module.ts` and Python packages.
 - **routes** — frontend routes (Angular Router / React Router).
+- **controllers** — Nest/Express `*.controller.ts`, `*Controller` classes, AngularJS controllers.
 - **apis** — backend endpoints (Express / FastAPI / Flask), as `METHOD path`.
 - **services** — Angular/Nest `*.service.ts` and `*Service` classes.
 - **collections** — MongoDB collections/models (Mongoose / mongoengine / PyMongo).
 - **roles** — best-effort role identifiers.
+- **config_files** — configuration files (`package.json`, `angular.json`, `tsconfig*`, `requirements*`, `.env*`, `Dockerfile`, etc.) as relative paths.
 
-`services` is included in addition to the keys shown in the original spec so the
-discovered services (requirement #4) are surfaced. Optional `branch` may be
-supplied in the request body. A configured `QA_ARCHITECT_GITHUB_TOKEN` is used
-for private `github.com` repositories.
+`controllers`, `services`, `roles`, and `config_files` are included in addition
+to the keys shown in the spec example so all discovery targets (requirement #4)
+are surfaced. Optional `branch` may be supplied in the request body. A configured
+`QA_ARCHITECT_GITHUB_TOKEN` is used for private `github.com` repositories.
+
+### Reusable artifact
+
+Each successful `POST /discover` writes the result to **`outputs/application.json`**
+(configurable via `QA_ARCHITECT_OUTPUT_DIR`). Later QA Architect stages should
+consume this artifact instead of re-reading the repository:
+
+```bash
+curl http://localhost:8000/application   # returns the saved application.json
+```
 
 ## Testing
 

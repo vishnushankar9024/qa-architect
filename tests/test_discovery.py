@@ -6,6 +6,7 @@ These tests build synthetic repositories on disk so they run fully offline
 
 from __future__ import annotations
 
+import json
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -13,6 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api import app
+from app.config import get_settings
 from app.discovery import service as discovery_service
 from app.discovery.analyzer import analyze_repository
 from app.discovery.cloner import CloneError, derive_application_name
@@ -24,6 +26,15 @@ def _write(root: Path, rel: str, content: str) -> None:
     path = root / rel
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+@pytest.fixture
+def artifact_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Redirect the discovery artifact output to a temp directory."""
+
+    out = tmp_path / "outputs"
+    monkeypatch.setattr(get_settings(), "output_dir", str(out))
+    return out
 
 
 @pytest.fixture
@@ -110,6 +121,13 @@ def node_repo(tmp_path: Path) -> Path:
         "src/app/users/users.service.ts",
         "@Injectable()\nexport class UsersService {}\n",
     )
+    _write(
+        tmp_path,
+        "server/controllers/users.controller.ts",
+        "@Controller('users')\nexport class UsersController {}\n",
+    )
+    _write(tmp_path, "tsconfig.json", "{}")
+    _write(tmp_path, ".env.example", "PORT=3000\n")
     return tmp_path
 
 
@@ -178,6 +196,11 @@ def test_node_repo_discovery(node_repo: Path) -> None:
     assert "User" in result.collections and "Order" in result.collections
     assert "users" in result.services or "UsersService" in result.services
     assert {"admin", "editor", "viewer"}.issubset(set(result.roles))
+    assert "users" in result.controllers or "UsersController" in result.controllers
+    assert "package.json" in result.config_files
+    assert "angular.json" in result.config_files
+    assert "tsconfig.json" in result.config_files
+    assert ".env.example" in result.config_files
 
 
 def test_python_repo(python_repo: Path) -> None:
@@ -192,7 +215,9 @@ def test_python_repo(python_repo: Path) -> None:
     assert {"admin", "customer", "manager"}.issubset(set(result.roles))
 
 
-def test_discover_endpoint(monkeypatch: pytest.MonkeyPatch, node_repo: Path) -> None:
+def test_discover_endpoint(
+    monkeypatch: pytest.MonkeyPatch, node_repo: Path, artifact_dir: Path
+) -> None:
     @contextmanager
     def fake_clone(repo_url, branch=None, timeout=180):  # noqa: ANN001
         yield node_repo
@@ -211,13 +236,43 @@ def test_discover_endpoint(monkeypatch: pytest.MonkeyPatch, node_repo: Path) -> 
         "technology",
         "modules",
         "routes",
+        "controllers",
         "apis",
         "services",
         "collections",
         "roles",
+        "config_files",
     }
     assert "Angular" in body["technology"]
     assert "GET /api/users" in body["apis"]
+
+    # The reusable artifact must be written to outputs/application.json.
+    artifact = artifact_dir / "application.json"
+    assert artifact.is_file()
+    saved = json.loads(artifact.read_text())
+    assert saved["application"] == "demo-app"
+    assert saved == body
+
+
+def test_application_artifact_roundtrip(
+    monkeypatch: pytest.MonkeyPatch, node_repo: Path, artifact_dir: Path
+) -> None:
+    @contextmanager
+    def fake_clone(repo_url, branch=None, timeout=180):  # noqa: ANN001
+        yield node_repo
+
+    monkeypatch.setattr(discovery_service, "clone_repository", fake_clone)
+
+    # No artifact yet -> 404.
+    assert client.get("/application").status_code == 404
+
+    discover = client.post("/discover", json={"repo_url": "https://github.com/acme/demo-app"})
+    assert discover.status_code == 200
+
+    # Future stages consume the saved artifact without re-reading the repo.
+    loaded = client.get("/application")
+    assert loaded.status_code == 200
+    assert loaded.json() == discover.json()
 
 
 def test_discover_endpoint_clone_failure(monkeypatch: pytest.MonkeyPatch) -> None:

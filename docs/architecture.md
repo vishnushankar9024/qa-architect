@@ -22,8 +22,12 @@ Current endpoints (all placeholders):
 
 - `GET /` and `GET /health` — service health.
 - `POST /discover` — clone a GitHub repo and return a deterministic discovery
-  result (`technology`, `modules`, `routes`, `apis`, `services`, `collections`,
-  `roles`). Implemented in `app/discovery/` (`cloner.py` + `analyzer.py`).
+  result (`technology`, `modules`, `routes`, `controllers`, `apis`, `services`,
+  `collections`, `roles`, `config_files`). Implemented in `app/discovery/`
+  (`cloner.py` + `analyzer.py`). The result is persisted to
+  `outputs/application.json` via `app/discovery/artifacts.py`.
+- `GET /application` — return the saved `outputs/application.json` artifact so
+  later stages consume it instead of re-reading the repository.
 - `GET /discovery/repositories` — list known repositories.
 - `GET /knowledge/entries` — list knowledge entries.
 - `GET /qa/test-plan?repository=<full_name>` — build a placeholder test plan.

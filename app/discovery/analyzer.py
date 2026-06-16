@@ -117,6 +117,9 @@ _MONGO_ATTR_DENYLIST = {
 _NEST_SERVICE_CLASS = re.compile(r"class\s+(\w+Service)\b")
 _PY_SERVICE_CLASS = re.compile(r"class\s+(\w+Service)\b")
 
+_CONTROLLER_CLASS = re.compile(r"class\s+(\w+Controller)\b")
+_ANGULARJS_CONTROLLER = re.compile(r"\.controller\s*\(\s*['\"]([^'\"]+)['\"]")
+
 _NEST_ROLES = re.compile(r"@Roles\s*\(([^)]*)\)")
 _ROLES_ASSIGN = re.compile(r"\broles?\b\s*[:=]\s*\[([^\]]*)\]", re.IGNORECASE)
 _ROLE_ENUM = re.compile(r"enum\s+\w*Roles?\w*\s*\{([^}]*)\}", re.IGNORECASE)
@@ -125,6 +128,56 @@ _ROLE_COMPARE = re.compile(
 )
 _HAS_ROLE = re.compile(r"hasRole\s*\(\s*['\"]([^'\"]+)['\"]")
 _QUOTED = re.compile(r"['\"]([^'\"]+)['\"]")
+
+# Configuration files recognised by exact name.
+_CONFIG_FILENAMES = {
+    "package.json",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "angular.json",
+    "nx.json",
+    "nest-cli.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "setup.py",
+    "setup.cfg",
+    "Pipfile",
+    "Pipfile.lock",
+    "poetry.lock",
+    "manage.py",
+    "alembic.ini",
+    "pytest.ini",
+    "tox.ini",
+    "mypy.ini",
+    "Dockerfile",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+    "Makefile",
+    "Procfile",
+}
+
+# Configuration files recognised by filename prefix.
+_CONFIG_PREFIXES = (
+    "tsconfig",
+    ".env",
+    "requirements",
+    ".eslintrc",
+    ".prettierrc",
+    ".babelrc",
+    "babel.config",
+    "jest.config",
+    "vite.config",
+    "vitest.config",
+    "webpack.config",
+    "rollup.config",
+    "next.config",
+    "nuxt.config",
+    "karma.conf",
+    "cypress.config",
+    "playwright.config",
+    "environment.",
+)
 
 
 def _iter_files(root: Path) -> list[Path]:
@@ -311,6 +364,38 @@ def _detect_services(index: _Index) -> list[str]:
     return _sorted_unique(services)
 
 
+def _detect_controllers(index: _Index) -> list[str]:
+    controllers: set[str] = set()
+
+    for path, text in index.code_items(".ts"):
+        if path.name.endswith(".controller.ts"):
+            controllers.add(path.name[: -len(".controller.ts")])
+        for match in _CONTROLLER_CLASS.findall(text):
+            controllers.add(match)
+
+    for _path, text in index.code_items(".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"):
+        if ".controller(" in text:
+            for match in _ANGULARJS_CONTROLLER.findall(text):
+                controllers.add(match)
+
+    for _path, text in index.code_items(".py"):
+        for match in _CONTROLLER_CLASS.findall(text):
+            controllers.add(match)
+
+    return _sorted_unique(controllers)
+
+
+def _detect_config_files(index: _Index) -> list[str]:
+    config_files: set[str] = set()
+
+    for path in index.files:
+        name = path.name
+        if name in _CONFIG_FILENAMES or name.startswith(_CONFIG_PREFIXES):
+            config_files.add(path.relative_to(index.root).as_posix())
+
+    return _sorted_unique(config_files)
+
+
 def _detect_collections(index: _Index) -> list[str]:
     collections: set[str] = set()
 
@@ -365,8 +450,10 @@ def analyze_repository(root: Path, application: str) -> DiscoveryResult:
         technology=_detect_technology(index),
         modules=_detect_modules(index),
         routes=_detect_routes(index),
+        controllers=_detect_controllers(index),
         apis=_detect_apis(index),
         services=_detect_services(index),
         collections=_detect_collections(index),
         roles=_detect_roles(index),
+        config_files=_detect_config_files(index),
     )

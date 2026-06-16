@@ -32,6 +32,10 @@ class DiscoveryResult(BaseModel):
     )
     modules: list[str] = Field(default_factory=list, description="Discovered modules.")
     routes: list[str] = Field(default_factory=list, description="Discovered frontend routes.")
+    controllers: list[str] = Field(
+        default_factory=list,
+        description="Discovered controllers (Nest/Express/AngularJS).",
+    )
     apis: list[str] = Field(default_factory=list, description="Discovered backend API endpoints.")
     services: list[str] = Field(default_factory=list, description="Discovered services.")
     collections: list[str] = Field(
@@ -39,6 +43,10 @@ class DiscoveryResult(BaseModel):
         description="Discovered MongoDB collections/models.",
     )
     roles: list[str] = Field(default_factory=list, description="Discovered roles.")
+    config_files: list[str] = Field(
+        default_factory=list,
+        description="Discovered configuration files (relative paths).",
+    )
 
 
 class RepositoryFile(BaseModel):
