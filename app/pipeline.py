@@ -41,6 +41,10 @@ PIPELINE: tuple[tuple[str, str], ...] = (
 # Only this stage is permitted to scan/clone repositories.
 REPOSITORY_SCANNING_STAGE = "discovery"
 
+# Stages that currently have a runnable implementation (the rest are reserved
+# placeholders in the chain).
+IMPLEMENTED_STAGES: tuple[str, ...] = ("discovery", "features", "domains")
+
 _ARTIFACT_BY_STAGE: dict[str, str] = {stage: name for stage, name in PIPELINE}
 _STAGE_ORDER: list[str] = [stage for stage, _ in PIPELINE]
 
@@ -128,3 +132,47 @@ def require_previous_artifact(stage: str, settings: Settings | None = None) -> P
             f"{prev_artifact} not found. Run the '{prev}' stage before '{stage}'."
         )
     return path
+
+
+def pipeline_status(settings: Settings | None = None):
+    """Return a validation snapshot of the artifact pipeline.
+
+    Reports, per stage, whether its artifact exists and whether the stage is
+    implemented, plus the next implemented stage that can run (its upstream
+    artifact is present). Imported lazily to avoid a model import at module load.
+    """
+
+    from app.models.pipeline import PipelineStatus, StageStatus
+
+    stages: list[StageStatus] = []
+    completed: list[str] = []
+    for stage, artifact in PIPELINE:
+        exists = artifact_path(artifact, settings).is_file()
+        stages.append(
+            StageStatus(
+                stage=stage,
+                artifact=artifact,
+                artifact_exists=exists,
+                implemented=stage in IMPLEMENTED_STAGES,
+            )
+        )
+        if exists:
+            completed.append(stage)
+
+    next_stage: str | None = None
+    for stage, artifact in PIPELINE:
+        if stage not in IMPLEMENTED_STAGES:
+            continue
+        if artifact_path(artifact, settings).is_file():
+            continue
+        prev = previous_artifact(stage)
+        if prev is None or artifact_path(prev, settings).is_file():
+            next_stage = stage
+            break
+
+    return PipelineStatus(
+        output_dir=str(output_dir(settings)),
+        stages=stages,
+        completed_stages=completed,
+        next_stage=next_stage,
+    )

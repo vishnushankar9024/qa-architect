@@ -49,6 +49,9 @@ served through `main.py` (`uvicorn main:app`).
 Current endpoints (all placeholders):
 
 - `GET /` and `GET /health` — service health.
+- `GET /pipeline-status` — validation snapshot of the Artifact First pipeline:
+  per-stage artifact existence + `implemented` flag, completed stages, and the
+  next implemented stage that can run. Backed by `pipeline.pipeline_status()`.
 - `POST /discover` — clone a GitHub repo and return a deterministic discovery
   result (`technology`, `modules`, `routes`, `controllers`, `apis`, `services`,
   `collections`, `roles`, `config_files`, `angular`). Implemented in

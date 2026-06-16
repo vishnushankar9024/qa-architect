@@ -61,6 +61,7 @@ optional for the scaffold.
 | --- | --- | --- |
 | GET | `/` | Service health. |
 | GET | `/health` | Liveness/readiness probe. |
+| GET | `/pipeline-status` | Validate pipeline state: which stage artifacts exist and what can run next. |
 | GET | `/discovery/repositories` | List known repositories. |
 | POST | `/discover` | Clone a GitHub repo and return a deterministic discovery result (also writes `outputs/application.json`). |
 | GET | `/application` | Return the saved `outputs/application.json` discovery artifact. |

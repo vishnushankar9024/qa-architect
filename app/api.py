@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app import __version__
+from app import __version__, pipeline
 from app.config import get_settings
 from app.discovery import discover_router
 from app.discovery import router as discovery_router
@@ -13,6 +13,7 @@ from app.features import router as features_router
 from app.github import router as github_router
 from app.knowledge import router as knowledge_router
 from app.models.common import HealthStatus
+from app.models.pipeline import PipelineStatus
 from app.qa import router as qa_router
 
 
@@ -48,6 +49,16 @@ def create_app() -> FastAPI:
             version=__version__,
             environment=settings.environment,
         )
+
+    @app.get("/pipeline-status", response_model=PipelineStatus, tags=["pipeline"])
+    def pipeline_status() -> PipelineStatus:
+        """Validate the Artifact First pipeline state.
+
+        Reports which stage artifacts exist under the output directory and the
+        next implemented stage that can run (its upstream artifact is present).
+        """
+
+        return pipeline.pipeline_status()
 
     app.include_router(discovery_router)
     app.include_router(discover_router)

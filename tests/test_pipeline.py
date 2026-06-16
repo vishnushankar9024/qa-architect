@@ -67,3 +67,42 @@ def test_require_previous_artifact_missing_then_present(artifact_dir: Path) -> N
 def test_require_previous_artifact_first_stage_raises() -> None:
     with pytest.raises(ValueError):
         pipeline.require_previous_artifact("discovery")
+
+
+def test_pipeline_status_progression(artifact_dir: Path) -> None:
+    from fastapi.testclient import TestClient
+
+    from app.api import app
+
+    client = TestClient(app)
+
+    # Nothing generated yet -> discovery is next, nothing completed.
+    status = client.get("/pipeline-status").json()
+    assert status["next_stage"] == "discovery"
+    assert status["completed_stages"] == []
+    assert {s["stage"] for s in status["stages"]} == {
+        "discovery",
+        "features",
+        "domains",
+        "business-rules",
+        "test-strategy",
+        "test-scenarios",
+    }
+    # Implemented flags are reported.
+    impl = {s["stage"]: s["implemented"] for s in status["stages"]}
+    assert impl["discovery"] and impl["features"] and impl["domains"]
+    assert not impl["business-rules"]
+
+    # After the discovery artifact exists, features becomes the next stage.
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    (artifact_dir / "application.json").write_text("{}", encoding="utf-8")
+    status = client.get("/pipeline-status").json()
+    assert status["completed_stages"] == ["discovery"]
+    assert status["next_stage"] == "features"
+
+    # After features + domains artifacts exist, no implemented stage remains.
+    (artifact_dir / "feature-inventory.json").write_text("{}", encoding="utf-8")
+    (artifact_dir / "domain-model.json").write_text("{}", encoding="utf-8")
+    status = client.get("/pipeline-status").json()
+    assert status["completed_stages"] == ["discovery", "features", "domains"]
+    assert status["next_stage"] is None
