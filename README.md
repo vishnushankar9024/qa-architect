@@ -66,6 +66,8 @@ optional for the scaffold.
 | GET | `/application` | Return the saved `outputs/application.json` discovery artifact. |
 | POST | `/features` | Group `application.json` into business features (writes `outputs/feature-inventory.json`). |
 | GET | `/features` | Return the saved `outputs/feature-inventory.json` feature inventory. |
+| POST | `/domains` | Group `feature-inventory.json` into business domains (writes `outputs/domain-model.json`). |
+| GET | `/domains` | Return the saved `outputs/domain-model.json` domain model. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
@@ -159,6 +161,34 @@ Output shape (`outputs/feature-inventory.json`):
 Artifacts that carry no business token (e.g. `/`, `:id`) are collected under a
 `General` feature, listed last. Run `POST /discover` first so `application.json`
 exists.
+
+## Domain Discovery (`POST /domains`)
+
+The third stage. It **consumes `outputs/feature-inventory.json` only** (no repo
+reads/clones, no LLM) and deterministically groups features into business
+domains using a fixed keyword taxonomy. Each feature name is tokenized and
+matched to the best-scoring domain; unmatched features fall under `General`.
+
+```bash
+curl -X POST http://localhost:8000/domains   # builds outputs/domain-model.json
+curl http://localhost:8000/domains           # returns the saved domain model
+```
+
+Output shape (`outputs/domain-model.json`):
+
+```json
+{
+  "domains": [
+    {
+      "name": "Identity and Access Management",
+      "features": ["Authentication", "Roles & Permissions", "User Management"]
+    }
+  ]
+}
+```
+
+Run `POST /features` first so `feature-inventory.json` exists (enforced by the
+Artifact First Rule).
 
 ## Testing
 

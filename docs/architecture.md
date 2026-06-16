@@ -9,6 +9,7 @@ AI features are intentionally **not** implemented yet.
 | --- | --- | --- |
 | Discovery | `app/discovery` | Locate and scan repositories. |
 | Features | `app/features` | Group discovery artifacts into business features. |
+| Domains | `app/domains` | Group features into business domains. |
 | Knowledge | `app/knowledge` | Store and retrieve project knowledge. |
 | QA | `app/qa` | Build test plans and test cases. |
 | GitHub | `app/github` | GitHub integration / API access. |
@@ -22,6 +23,7 @@ the previous stage**, and stages write their own artifact under `outputs/`:
 ```
 application.json        (Discovery)
   -> feature-inventory.json   (Feature Discovery)
+  -> domain-model.json        (Domain Discovery)
   -> business-rules.json      (Business Rules — not implemented yet)
   -> test-strategy.json       (Test Strategy — not implemented yet)
   -> test-scenarios.json      (Test Scenarios — not implemented yet)
@@ -64,6 +66,11 @@ Current endpoints (all placeholders):
   `outputs/feature-inventory.json`. Implemented in `app/features/`
   (`grouping.py` + `service.py` + `artifacts.py`).
 - `GET /features` — return the saved `outputs/feature-inventory.json` artifact.
+- `POST /domains` — domain discovery stage. Consumes `feature-inventory.json`
+  only (no repo reads/clones, no LLM) and deterministically groups features into
+  business domains via a keyword taxonomy, written to `outputs/domain-model.json`.
+  Implemented in `app/domains/` (`grouping.py` + `service.py` + `artifacts.py`).
+- `GET /domains` — return the saved `outputs/domain-model.json` artifact.
 - `GET /discovery/repositories` — list known repositories.
 - `GET /knowledge/entries` — list knowledge entries.
 - `GET /qa/test-plan?repository=<full_name>` — build a placeholder test plan.

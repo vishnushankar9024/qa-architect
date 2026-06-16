@@ -8,6 +8,7 @@ from app.models.discovery import (
     Repository,
     RepositoryFile,
 )
+from app.models.domain import Domain, DomainModel
 from app.models.feature import Feature, FeatureInventory
 from app.models.knowledge import KnowledgeEntry
 from app.models.qa import TestCase, TestPlan
@@ -22,6 +23,8 @@ __all__ = [
     "RepositoryFile",
     "Feature",
     "FeatureInventory",
+    "Domain",
+    "DomainModel",
     "KnowledgeEntry",
     "TestCase",
     "TestPlan",

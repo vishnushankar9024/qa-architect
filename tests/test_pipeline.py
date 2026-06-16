@@ -22,6 +22,7 @@ def test_pipeline_chain_order() -> None:
     assert stages == [
         "discovery",
         "features",
+        "domains",
         "business-rules",
         "test-strategy",
         "test-scenarios",
@@ -30,6 +31,7 @@ def test_pipeline_chain_order() -> None:
     assert artifacts == [
         "application.json",
         "feature-inventory.json",
+        "domain-model.json",
         "business-rules.json",
         "test-strategy.json",
         "test-scenarios.json",
@@ -44,7 +46,8 @@ def test_previous_artifact_mapping() -> None:
     assert pipeline.previous_stage("discovery") is None
     assert pipeline.previous_artifact("discovery") is None
     assert pipeline.previous_artifact("features") == "application.json"
-    assert pipeline.previous_artifact("business-rules") == "feature-inventory.json"
+    assert pipeline.previous_artifact("domains") == "feature-inventory.json"
+    assert pipeline.previous_artifact("business-rules") == "domain-model.json"
     assert pipeline.previous_artifact("test-strategy") == "business-rules.json"
     assert pipeline.previous_artifact("test-scenarios") == "test-strategy.json"
 

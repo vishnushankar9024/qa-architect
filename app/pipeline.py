@@ -9,6 +9,7 @@ Allowed chain (each arrow = "consumes"):
 
     application.json
     -> feature-inventory.json
+    -> domain-model.json
     -> business-rules.json
     -> test-strategy.json
     -> test-scenarios.json
@@ -31,6 +32,7 @@ from app.config import Settings, get_settings
 PIPELINE: tuple[tuple[str, str], ...] = (
     ("discovery", "application.json"),
     ("features", "feature-inventory.json"),
+    ("domains", "domain-model.json"),
     ("business-rules", "business-rules.json"),
     ("test-strategy", "test-strategy.json"),
     ("test-scenarios", "test-scenarios.json"),
