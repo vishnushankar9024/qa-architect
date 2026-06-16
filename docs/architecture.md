@@ -49,9 +49,13 @@ Current endpoints (all placeholders):
 - `GET /` and `GET /health` — service health.
 - `POST /discover` — clone a GitHub repo and return a deterministic discovery
   result (`technology`, `modules`, `routes`, `controllers`, `apis`, `services`,
-  `collections`, `roles`, `config_files`). Implemented in `app/discovery/`
-  (`cloner.py` + `analyzer.py`). The result is persisted to
-  `outputs/application.json` via `app/discovery/artifacts.py`.
+  `collections`, `roles`, `config_files`, `angular`). Implemented in
+  `app/discovery/` (`cloner.py` + `analyzer.py`). The result is persisted to
+  `outputs/application.json` via `app/discovery/artifacts.py`. For standalone
+  Angular apps (no `*.module.ts`), feature folders are inferred from folder
+  structure and the routing graph (`loadChildren`/`loadComponent`) and surfaced
+  both in `modules` and the structured `angular` insights
+  (`feature_folders`, `route_groups`, `lazy_feature_areas`, `component_hierarchy`).
 - `GET /application` — return the saved `outputs/application.json` artifact so
   later stages consume it instead of re-reading the repository.
 - `POST /features` — feature discovery stage. Consumes `application.json` only

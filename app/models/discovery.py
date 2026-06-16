@@ -19,6 +19,31 @@ class DiscoverRequest(BaseModel):
     )
 
 
+class AngularInsights(BaseModel):
+    """Structural insights for Angular standalone applications.
+
+    Standalone Angular apps have no ``*.module.ts`` files, so feature grouping
+    must be inferred from folder structure and the routing graph instead.
+    """
+
+    feature_folders: list[str] = Field(
+        default_factory=list,
+        description="Feature folders under the app source root (standalone feature groupings).",
+    )
+    route_groups: list[str] = Field(
+        default_factory=list,
+        description="Route-group files (``*.routes.ts``) excluding the root app routes.",
+    )
+    lazy_feature_areas: list[str] = Field(
+        default_factory=list,
+        description="Feature areas loaded lazily via loadChildren/loadComponent imports.",
+    )
+    component_hierarchy: dict[str, list[str]] = Field(
+        default_factory=dict,
+        description="Mapping of feature folder -> component names within it.",
+    )
+
+
 class DiscoveryResult(BaseModel):
     """Deterministic discovery result for a repository.
 
@@ -46,6 +71,10 @@ class DiscoveryResult(BaseModel):
     config_files: list[str] = Field(
         default_factory=list,
         description="Discovered configuration files (relative paths).",
+    )
+    angular: AngularInsights | None = Field(
+        None,
+        description="Angular standalone structural insights (None if not applicable).",
     )
 
 

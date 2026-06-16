@@ -18,7 +18,7 @@ import json
 import re
 from pathlib import Path
 
-from app.models.discovery import DiscoveryResult
+from app.models.discovery import AngularInsights, DiscoveryResult
 
 # Directories that never contain first-party source worth scanning.
 IGNORED_DIRS = {
@@ -119,6 +119,59 @@ _PY_SERVICE_CLASS = re.compile(r"class\s+(\w+Service)\b")
 
 _CONTROLLER_CLASS = re.compile(r"class\s+(\w+Controller)\b")
 _ANGULARJS_CONTROLLER = re.compile(r"\.controller\s*\(\s*['\"]([^'\"]+)['\"]")
+
+# Angular standalone lazy loading: loadChildren/loadComponent => import('path').
+_NG_LAZY_IMPORT = re.compile(
+    r"load(?:Children|Component)\s*:\s*\(\)\s*=>\s*import\(\s*['\"]([^'\"]+)['\"]"
+)
+
+# Path segments that introduce a feature grouping; the segment that follows is
+# treated as the feature name.
+_FEATURE_ROOT_SEGMENTS = {"pages", "features", "modules", "views", "app"}
+
+# Folder names that are infrastructure rather than business features.
+_NON_FEATURE_SEGMENTS = {
+    "shared",
+    "layout",
+    "layouts",
+    "core",
+    "common",
+    "components",
+    "component",
+    "services",
+    "service",
+    "models",
+    "model",
+    "utils",
+    "util",
+    "helpers",
+    "helper",
+    "environment",
+    "environments",
+    "assets",
+    "pipes",
+    "directives",
+    "guards",
+    "interceptors",
+    "constants",
+    "config",
+    "store",
+    "state",
+    "styles",
+}
+
+# Angular file kinds that mark a folder as containing first-party feature code.
+_ANGULAR_ARTIFACT_SUFFIXES = (
+    ".component.ts",
+    ".service.ts",
+    ".directive.ts",
+    ".pipe.ts",
+    ".guard.ts",
+    ".routes.ts",
+    ".resolver.ts",
+    ".interceptor.ts",
+    ".module.ts",
+)
 
 _NEST_ROLES = re.compile(r"@Roles\s*\(([^)]*)\)")
 _ROLES_ASSIGN = re.compile(r"\broles?\b\s*[:=]\s*\[([^\]]*)\]", re.IGNORECASE)
@@ -296,7 +349,100 @@ def _detect_technology(index: _Index) -> list[str]:
     return techs
 
 
-def _detect_modules(index: _Index) -> list[str]:
+def _feature_from_path(rel_posix: str) -> str | None:
+    """Derive a feature folder name from a repository-relative file path.
+
+    Picks the segment that follows the *deepest* feature-root segment (e.g.
+    ``pages``/``app``), provided that segment is a directory (not the filename)
+    and is not an infrastructure folder.
+    """
+
+    segments = rel_posix.split("/")
+    feature: str | None = None
+    last_index = len(segments) - 1
+    for i, seg in enumerate(segments):
+        # The feature segment is segments[i + 1]; it must be a directory, i.e.
+        # not the trailing filename.
+        if seg in _FEATURE_ROOT_SEGMENTS and i + 1 < last_index:
+            feature = segments[i + 1]
+    if not feature or feature.lower() in _NON_FEATURE_SEGMENTS:
+        return None
+    return feature
+
+
+def _feature_from_import(import_path: str) -> str | None:
+    """Derive a feature area name from a lazy-loaded import path."""
+
+    path = import_path.strip()
+    while path.startswith(("./", "../")):
+        path = path[3:] if path.startswith("../") else path[2:]
+    segments = [s for s in path.split("/") if s]
+    if not segments:
+        return None
+
+    feature: str | None = None
+    for i, seg in enumerate(segments):
+        if seg in _FEATURE_ROOT_SEGMENTS and i + 1 < len(segments):
+            feature = segments[i + 1]
+    if feature is None:
+        candidates = segments[:-1] if len(segments) > 1 else segments
+        for seg in candidates:
+            if seg.lower() not in _NON_FEATURE_SEGMENTS:
+                feature = seg
+                break
+    if not feature:
+        return None
+    # Strip any Angular file suffix (e.g. "notifications.component" -> "notifications").
+    feature = feature.split(".")[0]
+    if not feature or feature.lower() in _NON_FEATURE_SEGMENTS:
+        return None
+    return feature
+
+
+def _detect_angular_insights(index: _Index) -> AngularInsights | None:
+    """Infer Angular standalone feature groupings from structure + routing."""
+
+    feature_folders: set[str] = set()
+    route_groups: set[str] = set()
+    lazy_areas: set[str] = set()
+    hierarchy: dict[str, set[str]] = {}
+
+    for path, text in index.code_items(".ts"):
+        rel = path.relative_to(index.root).as_posix()
+        name = path.name
+
+        if name.endswith(_ANGULAR_ARTIFACT_SUFFIXES):
+            feature = _feature_from_path(rel)
+            if feature:
+                feature_folders.add(feature)
+                if name.endswith(".component.ts"):
+                    component = name[: -len(".component.ts")]
+                    hierarchy.setdefault(feature, set()).add(component)
+
+        if name.endswith(".routes.ts"):
+            group = name[: -len(".routes.ts")]
+            if group and group.lower() != "app":
+                route_groups.add(group)
+
+        for import_path in _NG_LAZY_IMPORT.findall(text):
+            area = _feature_from_import(import_path)
+            if area:
+                lazy_areas.add(area)
+
+    if not (feature_folders or route_groups or lazy_areas or hierarchy):
+        return None
+
+    return AngularInsights(
+        feature_folders=_sorted_unique(feature_folders),
+        route_groups=_sorted_unique(route_groups),
+        lazy_feature_areas=_sorted_unique(lazy_areas),
+        component_hierarchy={
+            feature: sorted(components) for feature, components in sorted(hierarchy.items())
+        },
+    )
+
+
+def _detect_modules(index: _Index, angular: AngularInsights | None) -> list[str]:
     modules: set[str] = set()
 
     for path, _text in index.code_items(".ts"):
@@ -307,6 +453,11 @@ def _detect_modules(index: _Index) -> list[str]:
     for path in index.files:
         if path.name == "__init__.py":
             modules.add(path.parent.name)
+
+    # Angular standalone apps have no NgModules; their feature folders are the
+    # closest equivalent of a module/feature grouping.
+    if angular:
+        modules.update(angular.feature_folders)
 
     return _sorted_unique(modules)
 
@@ -445,10 +596,11 @@ def analyze_repository(root: Path, application: str) -> DiscoveryResult:
     """Analyze the repository rooted at ``root`` and return a discovery result."""
 
     index = _Index(Path(root))
+    angular = _detect_angular_insights(index)
     return DiscoveryResult(
         application=application,
         technology=_detect_technology(index),
-        modules=_detect_modules(index),
+        modules=_detect_modules(index, angular),
         routes=_detect_routes(index),
         controllers=_detect_controllers(index),
         apis=_detect_apis(index),
@@ -456,4 +608,5 @@ def analyze_repository(root: Path, application: str) -> DiscoveryResult:
         collections=_detect_collections(index),
         roles=_detect_roles(index),
         config_files=_detect_config_files(index),
+        angular=angular,
     )

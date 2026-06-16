@@ -110,6 +110,7 @@ Response shape:
 - **collections** — MongoDB collections/models (Mongoose / mongoengine / PyMongo).
 - **roles** — best-effort role identifiers.
 - **config_files** — configuration files (`package.json`, `angular.json`, `tsconfig*`, `requirements*`, `.env*`, `Dockerfile`, etc.) as relative paths.
+- **angular** — standalone Angular insights (or `null`): `feature_folders`, `route_groups`, `lazy_feature_areas`, and `component_hierarchy` (feature → components). Standalone apps have no `*.module.ts`, so feature folders are inferred from structure/routing and also surfaced in `modules`.
 
 `controllers`, `services`, `roles`, and `config_files` are included in addition
 to the keys shown in the spec example so all discovery targets (requirement #4)

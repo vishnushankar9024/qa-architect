@@ -178,6 +178,96 @@ def python_repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
+@pytest.fixture
+def angular_standalone_repo(tmp_path: Path) -> Path:
+    """A standalone Angular app (no NgModules) organised by feature folders."""
+
+    _write(
+        tmp_path,
+        "package.json",
+        '{"name": "shop-web", "dependencies": {"@angular/core": "^17.0.0"}}',
+    )
+    _write(tmp_path, "angular.json", "{}")
+    _write(
+        tmp_path,
+        "src/app/app.routes.ts",
+        """
+        import { Routes } from '@angular/router';
+        export const routes: Routes = [
+          { path: 'orders', loadChildren: () => import('./pages/orders/orders.routes') },
+          { path: 'login', loadComponent: () => import('./pages/auth/login/login.component') },
+        ];
+        """,
+    )
+    _write(tmp_path, "src/app/app.component.ts", "export class AppComponent {}")
+    _write(
+        tmp_path,
+        "src/app/pages/orders/orders.routes.ts",
+        "export const routes = [];",
+    )
+    _write(
+        tmp_path,
+        "src/app/pages/orders/order-list/order-list.component.ts",
+        "export class OrderListComponent {}",
+    )
+    _write(
+        tmp_path,
+        "src/app/pages/orders/order-detail/order-detail.component.ts",
+        "export class OrderDetailComponent {}",
+    )
+    _write(
+        tmp_path,
+        "src/app/pages/orders/orders.service.ts",
+        "export class OrdersService {}",
+    )
+    _write(
+        tmp_path,
+        "src/app/pages/auth/login/login.component.ts",
+        "export class LoginComponent {}",
+    )
+    _write(
+        tmp_path,
+        "src/app/shared/widgets/spinner/spinner.component.ts",
+        "export class SpinnerComponent {}",
+    )
+    return tmp_path
+
+
+def test_angular_standalone_modules_not_zero(angular_standalone_repo: Path) -> None:
+    result = analyze_repository(angular_standalone_repo, "shop-web")
+    assert "Angular" in result.technology
+    # Feature folders surface as modules (was 0 before the enhancement).
+    assert "orders" in result.modules
+    assert "auth" in result.modules
+    # Infrastructure folders are excluded.
+    assert "shared" not in result.modules
+    assert "widgets" not in result.modules
+
+
+def test_angular_standalone_insights(angular_standalone_repo: Path) -> None:
+    result = analyze_repository(angular_standalone_repo, "shop-web")
+    assert result.angular is not None
+    ang = result.angular
+
+    assert "orders" in ang.feature_folders
+    assert "auth" in ang.feature_folders
+    assert "shared" not in ang.feature_folders
+
+    assert "orders" in ang.route_groups
+    assert "app" not in ang.route_groups
+
+    assert "orders" in ang.lazy_feature_areas
+    assert "auth" in ang.lazy_feature_areas
+
+    assert set(ang.component_hierarchy["orders"]) == {"order-list", "order-detail"}
+    assert ang.component_hierarchy["auth"] == ["login"]
+
+
+def test_non_angular_has_no_angular_insights(python_repo: Path) -> None:
+    result = analyze_repository(python_repo, "shop")
+    assert result.angular is None
+
+
 def test_node_repo_technology(node_repo: Path) -> None:
     result = analyze_repository(node_repo, "demo-app")
     assert result.application == "demo-app"
@@ -242,6 +332,7 @@ def test_discover_endpoint(
         "collections",
         "roles",
         "config_files",
+        "angular",
     }
     assert "Angular" in body["technology"]
     assert "GET /api/users" in body["apis"]

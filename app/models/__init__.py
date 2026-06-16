@@ -2,6 +2,7 @@
 
 from app.models.common import HealthStatus, Message
 from app.models.discovery import (
+    AngularInsights,
     DiscoverRequest,
     DiscoveryResult,
     Repository,
@@ -16,6 +17,7 @@ __all__ = [
     "Message",
     "DiscoverRequest",
     "DiscoveryResult",
+    "AngularInsights",
     "Repository",
     "RepositoryFile",
     "Feature",
