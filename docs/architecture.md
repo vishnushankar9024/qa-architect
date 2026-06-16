@@ -14,6 +14,31 @@ AI features are intentionally **not** implemented yet.
 | GitHub | `app/github` | GitHub integration / API access. |
 | Models | `app/models` | Shared Pydantic data models. |
 
+## Artifact First Rule
+
+QA Architect is a staged pipeline. **Every stage consumes the output artifact of
+the previous stage**, and stages write their own artifact under `outputs/`:
+
+```
+application.json        (Discovery)
+  -> feature-inventory.json   (Feature Discovery)
+  -> business-rules.json      (Business Rules — not implemented yet)
+  -> test-strategy.json       (Test Strategy — not implemented yet)
+  -> test-scenarios.json      (Test Scenarios — not implemented yet)
+```
+
+Rules:
+
+- **Repository scanning/cloning is allowed ONLY in the Discovery stage.** Every
+  later stage must read the upstream artifact, never the repository.
+- Do **not** re-read or re-clone a repository when an artifact already exists.
+
+The chain, artifact filenames, generic JSON save/load, and rule enforcement live
+in `app/pipeline.py` (the single source of truth). Downstream stages call
+`pipeline.require_previous_artifact("<stage>")` to fail fast (HTTP 404) when the
+upstream artifact is missing — see `app/features/service.py` for the reference
+implementation.
+
 ## API
 
 The FastAPI application is assembled in `app/api.py` via `create_app()` and is

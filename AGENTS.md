@@ -2,9 +2,10 @@
 
 ## Cursor Cloud specific instructions
 
-QA Architect is a Python 3.12 + FastAPI + Pydantic service. It is a **scaffold**:
-modules (`discovery`, `knowledge`, `qa`, `github`, `models`) expose placeholder
-endpoints only — AI features are intentionally not implemented.
+QA Architect is a Python 3.12 + FastAPI + Pydantic service. Discovery (`POST
+/discover`) and Feature Discovery (`POST /features`) are implemented with
+deterministic parsing; `knowledge`/`qa`/`github` remain placeholders. AI/LLM
+features are intentionally not implemented yet.
 
 ### Services
 
@@ -19,3 +20,11 @@ There is a single service: the FastAPI API.
 - Use the project virtualenv at `.venv` (created during setup). The system has no `pip` outside it, and `python3.12 -m venv` requires the `python3.12-venv` apt package (already installed).
 - The FastAPI app is built in `app/api.py` via `create_app()`; `main:app` is the ASGI target.
 - `outputs/` is git-ignored except for `.gitkeep`.
+- **Artifact First Rule**: QA Architect is a staged artifact pipeline
+  (`application.json` → `feature-inventory.json` → `business-rules.json` →
+  `test-strategy.json` → `test-scenarios.json`). Each stage must consume the
+  previous stage's artifact; **only the Discovery stage may scan/clone a
+  repository**. Never re-read/re-clone a repo when its artifact already exists.
+  The chain, artifact names, and enforcement helpers live in `app/pipeline.py`
+  (single source of truth); new stages should call
+  `pipeline.require_previous_artifact("<stage>")`. See `docs/architecture.md`.

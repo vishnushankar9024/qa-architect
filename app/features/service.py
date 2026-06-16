@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from app import pipeline
 from app.discovery.artifacts import load_application
 from app.features.artifacts import feature_artifact_path, load_inventory, save_inventory
 from app.features.grouping import build_feature_inventory
@@ -22,17 +23,24 @@ class FeatureInputError(RuntimeError):
 class FeatureService:
     """Builds and serves the feature inventory from discovery artifacts."""
 
+    STAGE = "features"
+
     def build(self) -> FeatureInventory:
         """Build ``feature-inventory.json`` from ``application.json``.
 
-        Raises ``FeatureInputError`` if the discovery artifact is missing.
+        Enforces the Artifact First Rule: the feature stage consumes the
+        discovery artifact only and never reads the repository. Raises
+        ``FeatureInputError`` if the upstream artifact is missing.
         """
 
+        try:
+            pipeline.require_previous_artifact(self.STAGE)
+        except pipeline.MissingArtifactError as exc:
+            raise FeatureInputError(str(exc)) from exc
+
         application = load_application()
-        if application is None:
-            raise FeatureInputError(
-                "application.json not found. Run POST /discover before feature discovery."
-            )
+        if application is None:  # pragma: no cover - guarded by require_previous_artifact
+            raise FeatureInputError("application.json could not be loaded.")
         inventory = build_feature_inventory(application)
         save_inventory(inventory)
         return inventory
