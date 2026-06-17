@@ -167,6 +167,51 @@ def _catalog() -> RuleCatalogModel:
             confidence=0.72,
             generated_rule_id="BR-004",
         ),
+        CatalogRule(
+            id="BR-005",
+            domain="Workflow, Approval and RACI",
+            feature="Checklist",
+            title="Checklist item records must be created through controlled API actions",
+            description="Checklist item records must be created through controlled API actions.",
+            rule_type="Technical",
+            priority="Low",
+            source="Generated",
+            status="Generated",
+            evidence=["Generated"],
+            tags=["crud"],
+            confidence=0.72,
+            generated_rule_id="BR-005",
+        ),
+        CatalogRule(
+            id="BR-006",
+            domain="Workflow, Approval and RACI",
+            feature="Checklist",
+            title="Checklist comment records must be created through controlled API actions",
+            description="Checklist comment records must be created through controlled API actions.",
+            rule_type="Technical",
+            priority="Low",
+            source="Generated",
+            status="Generated",
+            evidence=["Generated"],
+            tags=["crud"],
+            confidence=0.72,
+            generated_rule_id="BR-006",
+        ),
+        CatalogRule(
+            id="BR-007",
+            domain="Workflow, Approval and RACI",
+            feature="Checklist",
+            title="Checklist item records must be retrievable for authorized users",
+            description="Checklist item records must be retrievable for authorized users.",
+            rule_type="Authorization",
+            priority="Low",
+            source="Generated",
+            status="Generated",
+            evidence=["Generated"],
+            tags=["crud"],
+            confidence=0.64,
+            generated_rule_id="BR-007",
+        ),
     ]
     return RuleCatalogModel(
         summary=RuleCatalogSummary(total_generated_rules=len(rules), total_merged_rules=len(rules)),
@@ -184,8 +229,8 @@ def test_enrichment_consolidates_crud_and_adds_qa_rules() -> None:
     )
 
     rules = {rule.rule: rule for rule in model.rules}
-    assert report.source_catalog_rules == 4
-    assert report.source_crud_rules == 3
+    assert report.source_catalog_rules == 7
+    assert report.source_crud_rules == 6
     assert report.crud_rules < report.source_crud_rules
     assert report.crud_reduction_percentage >= 50
     assert report.average_testing_value_score > 6
