@@ -1,0 +1,14 @@
+{
+  "rules": [
+    { "id": "BR-001", "name": "Project activation gate", "domain": "Project Management", "entity": "Project", "type": "workflow", "description": "A project must be reviewed and approved before it can be activated." },
+    { "id": "BR-002", "name": "Single accountable role", "domain": "Workflow, Approval and RACI", "entity": "RACI Assignment", "type": "constraint", "description": "Each activity must have exactly one Accountable role in the RACI matrix." },
+    { "id": "BR-003", "name": "Checklist sign-off gate", "domain": "Quality and Inspection", "entity": "Checklist", "type": "workflow", "description": "An inspection checklist must be reviewed and approved before the related activity can be closed." },
+    { "id": "BR-004", "name": "Controlled document version", "domain": "Document Management", "entity": "Document", "type": "constraint", "description": "Only approved documents become the controlled version available for download." },
+    { "id": "BR-005", "name": "Planner sync window", "domain": "Integrations", "entity": "Planner", "type": "constraint", "description": "Planner synchronization runs only within the configured sync window and must reconcile mapped activities." },
+    { "id": "BR-006", "name": "Template versioning", "domain": "Project Management", "entity": "Template", "type": "constraint", "description": "Templates must be versioned before reuse on a new project." },
+    { "id": "BR-007", "name": "Vendor approval gate", "domain": "Vendor Management", "entity": "Vendor", "type": "workflow", "description": "Vendors must be approved before assignment to a project." },
+    { "id": "BR-008", "name": "Notification throttling", "domain": "Notifications", "entity": "Notification", "type": "constraint", "description": "Duplicate notifications must be throttled within a five minute window." },
+    { "id": "BR-009", "name": "Workstation completion gate", "domain": "Execution and Field", "entity": "Workstation", "type": "workflow", "description": "A workstation activity cannot be closed until its inspection checklist is complete." },
+    { "id": "BR-010", "name": "User activation prerequisite", "domain": "User and Access Management", "entity": "User", "type": "workflow", "description": "A user account must have a role assigned before access is activated." }
+  ]
+}

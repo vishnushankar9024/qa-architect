@@ -1,0 +1,710 @@
+{
+  "generated_by": "QA Architect - Flow Discovery Engine",
+  "engine": "deterministic / artifact-first",
+  "source_artifacts": [
+    "application.json",
+    "domain-model.json",
+    "feature-inventory.json",
+    "business-rule-catalog.json",
+    "traceability.json"
+  ],
+  "summary": {
+    "total_flows": 11,
+    "flows_per_domain": {
+      "Document Management": 1,
+      "Execution and Field": 1,
+      "Integrations": 1,
+      "Notifications": 1,
+      "Project Management": 3,
+      "Quality and Inspection": 1,
+      "User and Access Management": 1,
+      "Vendor Management": 1,
+      "Workflow, Approval and RACI": 1
+    },
+    "flows_per_category": {
+      "Activity Flow": 1,
+      "Checklist Flow": 1,
+      "Document Flow": 1,
+      "Integration Flow": 1,
+      "Notification Flow": 1,
+      "Project Flow": 2,
+      "RACI Flow": 1,
+      "Template Flow": 1,
+      "User Management Flow": 1,
+      "Vendor Management Flow": 1
+    },
+    "average_steps_per_flow": 4.36,
+    "highest_complexity_flows": [
+      "Workstation Execution Flow",
+      "Planner Synchronization Flow",
+      "Project Creation Flow",
+      "Document Approval Flow",
+      "Vendor Approval Flow",
+      "User Creation Flow",
+      "Template Creation Flow"
+    ],
+    "highest_criticality_flows": [
+      "Project Creation Flow",
+      "Project Assignment Flow",
+      "Document Approval Flow",
+      "Vendor Approval Flow"
+    ]
+  },
+  "flows": [
+    {
+      "flow_id": "FLOW-001",
+      "domain": "Document Management",
+      "flow_name": "Document Approval Flow",
+      "category": "Document Flow",
+      "confidence": 0.94,
+      "purpose": "Route a Document through review and approval to a final decision.",
+      "qa_metadata": {
+        "complexity": "High",
+        "criticality": "Critical",
+        "step_count": 5,
+        "integration_points": 0,
+        "document_touchpoints": 3,
+        "approval_touchpoints": 3
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Submission"
+        },
+        {
+          "sequence": 3,
+          "name": "Review"
+        },
+        {
+          "sequence": 4,
+          "name": "Approval"
+        },
+        {
+          "sequence": 5,
+          "name": "Closure"
+        }
+      ],
+      "dependencies": [],
+      "sources": [
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-007",
+          "name": "Approve Document"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "collection",
+          "id": "REQ-002",
+          "name": "Approve Document"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-007",
+          "name": "Review and Approve Document"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-002",
+      "domain": "Execution and Field",
+      "flow_name": "Workstation Execution Flow",
+      "category": "Activity Flow",
+      "confidence": 0.99,
+      "purpose": "Carry out and complete the work associated with a Workstation.",
+      "qa_metadata": {
+        "complexity": "High",
+        "criticality": "High",
+        "step_count": 5,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 0
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Assignment"
+        },
+        {
+          "sequence": 3,
+          "name": "Execution"
+        },
+        {
+          "sequence": 4,
+          "name": "Completion"
+        },
+        {
+          "sequence": 5,
+          "name": "Closure"
+        }
+      ],
+      "dependencies": [
+        "Checklist"
+      ],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-009",
+          "name": "Workstation completion gate"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-005",
+          "name": "Execute Workstation Activity"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-005",
+          "name": "Execute Workstation Activity"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-003",
+      "domain": "Integrations",
+      "flow_name": "Planner Synchronization Flow",
+      "category": "Integration Flow",
+      "confidence": 0.99,
+      "purpose": "Exchange and reconcile Planner data with an external system.",
+      "qa_metadata": {
+        "complexity": "High",
+        "criticality": "High",
+        "step_count": 3,
+        "integration_points": 5,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 0
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Mapping"
+        },
+        {
+          "sequence": 2,
+          "name": "Synchronization"
+        },
+        {
+          "sequence": 3,
+          "name": "Notification"
+        }
+      ],
+      "dependencies": [
+        "Microsoft Project",
+        "Primavera P6",
+        "SMTP Email Gateway"
+      ],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-005",
+          "name": "Planner sync window"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-009",
+          "name": "Sync Planner"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "collection",
+          "id": "REQ-003",
+          "name": "Sync Planner"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-009",
+          "name": "Synchronize Planner Schedule"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "route",
+          "id": "/integrations/planner",
+          "name": "Planner Sync"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-004",
+      "domain": "Notifications",
+      "flow_name": "Notification Flow",
+      "category": "Notification Flow",
+      "confidence": 0.82,
+      "purpose": "Detect an event and notify the relevant stakeholders for a Notification.",
+      "qa_metadata": {
+        "complexity": "Low",
+        "criticality": "Medium",
+        "step_count": 3,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 0
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Notification"
+        },
+        {
+          "sequence": 3,
+          "name": "Closure"
+        }
+      ],
+      "dependencies": [],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-008",
+          "name": "Notification throttling"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-008",
+          "name": "Send Notification"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-008",
+          "name": "Send Notification"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-005",
+      "domain": "Project Management",
+      "flow_name": "Project Assignment Flow",
+      "category": "Project Flow",
+      "confidence": 0.98,
+      "purpose": "Allocate ownership and responsibility for a Project.",
+      "qa_metadata": {
+        "complexity": "Medium",
+        "criticality": "Critical",
+        "step_count": 4,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 1
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Assignment"
+        },
+        {
+          "sequence": 3,
+          "name": "Delegation"
+        },
+        {
+          "sequence": 4,
+          "name": "Notification"
+        }
+      ],
+      "dependencies": [],
+      "sources": [
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-002",
+          "name": "Assign Project Team"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-001",
+          "name": "Create Project"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-002",
+          "name": "Assign Project Team"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-006",
+      "domain": "Project Management",
+      "flow_name": "Project Creation Flow",
+      "category": "Project Flow",
+      "confidence": 0.99,
+      "purpose": "Capture, validate and activate a new Project.",
+      "qa_metadata": {
+        "complexity": "High",
+        "criticality": "Critical",
+        "step_count": 5,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 1
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Submission"
+        },
+        {
+          "sequence": 3,
+          "name": "Review"
+        },
+        {
+          "sequence": 4,
+          "name": "Approval"
+        },
+        {
+          "sequence": 5,
+          "name": "Activation"
+        }
+      ],
+      "dependencies": [],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-001",
+          "name": "Project activation gate"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-001",
+          "name": "Create Project"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "collection",
+          "id": "REQ-001",
+          "name": "Create Project"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-001",
+          "name": "Create Project"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "route",
+          "id": "/projects/new",
+          "name": "New Project"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-007",
+      "domain": "Project Management",
+      "flow_name": "Template Creation Flow",
+      "category": "Template Flow",
+      "confidence": 0.77,
+      "purpose": "Capture, validate and activate a new Template.",
+      "qa_metadata": {
+        "complexity": "High",
+        "criticality": "High",
+        "step_count": 5,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 0
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Submission"
+        },
+        {
+          "sequence": 3,
+          "name": "Review"
+        },
+        {
+          "sequence": 4,
+          "name": "Approval"
+        },
+        {
+          "sequence": 5,
+          "name": "Activation"
+        }
+      ],
+      "dependencies": [
+        "Project"
+      ],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-006",
+          "name": "Template versioning"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-003",
+          "name": "Create Template"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-003",
+          "name": "Create Template"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "route",
+          "id": "/templates/new",
+          "name": "New Template"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-008",
+      "domain": "Quality and Inspection",
+      "flow_name": "Checklist Completion Flow",
+      "category": "Checklist Flow",
+      "confidence": 0.99,
+      "purpose": "Fill in, verify and sign off a Checklist.",
+      "qa_metadata": {
+        "complexity": "Medium",
+        "criticality": "High",
+        "step_count": 4,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 2
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Completion"
+        },
+        {
+          "sequence": 3,
+          "name": "Review"
+        },
+        {
+          "sequence": 4,
+          "name": "Approval"
+        }
+      ],
+      "dependencies": [],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-003",
+          "name": "Checklist sign-off gate"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-006",
+          "name": "Complete Checklist"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-006",
+          "name": "Complete Inspection Checklist"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-009",
+      "domain": "User and Access Management",
+      "flow_name": "User Creation Flow",
+      "category": "User Management Flow",
+      "confidence": 0.79,
+      "purpose": "Capture, validate and activate a new User.",
+      "qa_metadata": {
+        "complexity": "High",
+        "criticality": "High",
+        "step_count": 5,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 0
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Submission"
+        },
+        {
+          "sequence": 3,
+          "name": "Review"
+        },
+        {
+          "sequence": 4,
+          "name": "Approval"
+        },
+        {
+          "sequence": 5,
+          "name": "Activation"
+        }
+      ],
+      "dependencies": [],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-010",
+          "name": "User activation prerequisite"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-010",
+          "name": "Create User"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-010",
+          "name": "Create User Account"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-010",
+      "domain": "Vendor Management",
+      "flow_name": "Vendor Approval Flow",
+      "category": "Vendor Management Flow",
+      "confidence": 0.94,
+      "purpose": "Route a Vendor through review and approval to a final decision.",
+      "qa_metadata": {
+        "complexity": "High",
+        "criticality": "Critical",
+        "step_count": 5,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 3
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Submission"
+        },
+        {
+          "sequence": 3,
+          "name": "Review"
+        },
+        {
+          "sequence": 4,
+          "name": "Approval"
+        },
+        {
+          "sequence": 5,
+          "name": "Closure"
+        }
+      ],
+      "dependencies": [
+        "Project"
+      ],
+      "sources": [
+        {
+          "artifact": "business-rule-catalog.json",
+          "type": "rule",
+          "id": "BR-007",
+          "name": "Vendor approval gate"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-011",
+          "name": "Approve Vendor"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-011",
+          "name": "Approve Vendor Onboarding"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-011",
+      "domain": "Workflow, Approval and RACI",
+      "flow_name": "RACI Assignment Flow",
+      "category": "RACI Flow",
+      "confidence": 0.89,
+      "purpose": "Allocate ownership and responsibility for a RACI Assignment.",
+      "qa_metadata": {
+        "complexity": "Medium",
+        "criticality": "High",
+        "step_count": 4,
+        "integration_points": 0,
+        "document_touchpoints": 0,
+        "approval_touchpoints": 0
+      },
+      "steps": [
+        {
+          "sequence": 1,
+          "name": "Initiate"
+        },
+        {
+          "sequence": 2,
+          "name": "Assignment"
+        },
+        {
+          "sequence": 3,
+          "name": "Delegation"
+        },
+        {
+          "sequence": 4,
+          "name": "Notification"
+        }
+      ],
+      "dependencies": [],
+      "sources": [
+        {
+          "artifact": "feature-inventory.json",
+          "type": "api",
+          "id": "API-004",
+          "name": "Assign RACI Matrix"
+        },
+        {
+          "artifact": "feature-inventory.json",
+          "type": "feature",
+          "id": "FEAT-004",
+          "name": "Assign RACI Matrix"
+        }
+      ]
+    }
+  ]
+}

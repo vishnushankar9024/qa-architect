@@ -1,0 +1,59 @@
+{
+  "domains": [
+    {
+      "domain": "Project Management",
+      "entities": [
+        { "name": "Project", "criticality": "Critical" },
+        { "name": "Template", "criticality": "Medium" }
+      ]
+    },
+    {
+      "domain": "Workflow, Approval and RACI",
+      "entities": [
+        { "name": "RACI Assignment", "criticality": "High" }
+      ]
+    },
+    {
+      "domain": "Execution and Field",
+      "entities": [
+        { "name": "Workstation", "criticality": "High" }
+      ]
+    },
+    {
+      "domain": "Quality and Inspection",
+      "entities": [
+        { "name": "Checklist", "criticality": "High" }
+      ]
+    },
+    {
+      "domain": "Document Management",
+      "entities": [
+        { "name": "Document", "criticality": "High" }
+      ]
+    },
+    {
+      "domain": "Notifications",
+      "entities": [
+        { "name": "Notification", "criticality": "Medium" }
+      ]
+    },
+    {
+      "domain": "Integrations",
+      "entities": [
+        { "name": "Planner", "criticality": "High" }
+      ]
+    },
+    {
+      "domain": "User and Access Management",
+      "entities": [
+        { "name": "User", "criticality": "High" }
+      ]
+    },
+    {
+      "domain": "Vendor Management",
+      "entities": [
+        { "name": "Vendor", "criticality": "High" }
+      ]
+    }
+  ]
+}
