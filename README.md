@@ -76,6 +76,10 @@ optional for the scaffold.
 | POST | `/rule-catalog/build` | Merge generated rules with human overrides (writes catalog JSON and Markdown artifacts). |
 | GET | `/rule-catalog` | Return the saved `outputs/business-rule-catalog.json` artifact. |
 | GET | `/rule-catalog/markdown` | Return the saved `outputs/business-rule-catalog.md` artifact. |
+| POST | `/business-rules/enrich` | Transform the catalog into QA-focused enriched business rules and quality metrics. |
+| GET | `/business-rules/enriched` | Return the saved `outputs/enriched-business-rules.json` artifact. |
+| GET | `/business-rules/enriched/markdown` | Return the saved `outputs/enriched-business-rules.md` artifact. |
+| GET | `/business-rules/quality-report` | Return the saved `outputs/quality-report.json` artifact. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
@@ -319,6 +323,37 @@ Rule shape:
 Supported statuses are `Generated`, `Draft`, `Reviewed`, `Approved`, and
 `Deprecated`. Human overrides use the same `id` to take precedence over a
 generated rule, while retaining generated traceability in the catalog.
+
+## Business Rule Enrichment (`POST /business-rules/enrich`)
+
+The QA-focused enrichment layer. It **consumes existing artifacts only**:
+`application.json`, `feature-inventory.json`, `domain-model.json`,
+`traceability.json`, and `business-rule-catalog.json`. It does not scan or clone
+repositories and makes no LLM calls.
+
+Outputs:
+
+- `outputs/enriched-business-rules.json`
+- `outputs/enriched-business-rules.md`
+- `outputs/quality-report.json`
+
+Each enriched rule keeps traceability to source catalog/generated rule IDs:
+
+```json
+{
+  "id": "EBR-0001",
+  "source_rule_ids": ["BR-001"],
+  "classification": "Workflow",
+  "testing_value_score": 10,
+  "business_criticality": "Critical",
+  "confidence": 0.9,
+  "rule": "Only Accountable users may approve workflow items."
+}
+```
+
+The quality report includes total rules, CRUD counts, Workflow/Authorization/
+Validation/RACI counts, consolidated rule count, average testing value score,
+CRUD reduction percentage, and the top 100 highest-value QA rules.
 
 ## Testing
 

@@ -13,6 +13,7 @@ AI features are intentionally **not** implemented yet.
 | Traceability | `app/traceability` | Join artifacts into a domain→feature→relationships graph. |
 | Business Rules | `app/business_rules` | Infer deterministic business rule candidates from existing artifacts. |
 | Rule Catalog | `app/rule_catalog` | Merge generated rules with governed human overrides. |
+| Business Rule Enrichment | `app/business_rule_enrichment` | Convert catalog rules into QA-focused rules and quality metrics. |
 | Knowledge | `app/knowledge` | Store and retrieve project knowledge. |
 | QA | `app/qa` | Build test plans and test cases. |
 | GitHub | `app/github` | GitHub integration / API access. |
@@ -30,6 +31,7 @@ application.json        (Discovery)
   -> traceability.json        (Traceability Engine)
   -> business-rules.json      (Business Rule Discovery)
   -> business-rule-catalog.json (Rule Catalog)
+  -> enriched-business-rules.json (Business Rule Enrichment)
   -> test-strategy.json       (Test Strategy — not implemented yet)
   -> test-scenarios.json      (Test Scenarios — not implemented yet)
 ```
@@ -102,6 +104,17 @@ Current endpoints (all placeholders):
   artifact.
 - `GET /rule-catalog/markdown` — return the saved
   `outputs/business-rule-catalog.md` artifact.
+- `POST /business-rules/enrich` — business rule enrichment layer. Consumes
+  `application.json`, `feature-inventory.json`, `domain-model.json`,
+  `traceability.json`, and `business-rule-catalog.json` only (no repo
+  reads/clones, no LLM), consolidates low-value CRUD rules, infers PMWebX
+  workflow/RACI/document patterns, and writes `outputs/enriched-business-rules.json`,
+  `outputs/enriched-business-rules.md`, and `outputs/quality-report.json`.
+- `GET /business-rules/enriched` — return the saved
+  `outputs/enriched-business-rules.json` artifact.
+- `GET /business-rules/enriched/markdown` — return the saved Markdown artifact.
+- `GET /business-rules/quality-report` — return the saved
+  `outputs/quality-report.json` artifact.
 - `GET /discovery/repositories` — list known repositories.
 - `GET /knowledge/entries` — list knowledge entries.
 - `GET /qa/test-plan?repository=<full_name>` — build a placeholder test plan.

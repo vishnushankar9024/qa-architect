@@ -26,6 +26,7 @@ def test_pipeline_chain_order() -> None:
         "traceability",
         "business-rules",
         "rule-catalog",
+        "rule-enrichment",
         "test-strategy",
         "test-scenarios",
     ]
@@ -37,6 +38,7 @@ def test_pipeline_chain_order() -> None:
         "traceability.json",
         "business-rules.json",
         "business-rule-catalog.json",
+        "enriched-business-rules.json",
         "test-strategy.json",
         "test-scenarios.json",
     ]
@@ -54,7 +56,8 @@ def test_previous_artifact_mapping() -> None:
     assert pipeline.previous_artifact("traceability") == "domain-model.json"
     assert pipeline.previous_artifact("business-rules") == "traceability.json"
     assert pipeline.previous_artifact("rule-catalog") == "business-rules.json"
-    assert pipeline.previous_artifact("test-strategy") == "business-rule-catalog.json"
+    assert pipeline.previous_artifact("rule-enrichment") == "business-rule-catalog.json"
+    assert pipeline.previous_artifact("test-strategy") == "enriched-business-rules.json"
     assert pipeline.previous_artifact("test-scenarios") == "test-strategy.json"
 
 
@@ -93,6 +96,7 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
         "traceability",
         "business-rules",
         "rule-catalog",
+        "rule-enrichment",
         "test-strategy",
         "test-scenarios",
     }
@@ -100,6 +104,7 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
     impl = {s["stage"]: s["implemented"] for s in status["stages"]}
     assert impl["discovery"] and impl["features"] and impl["domains"]
     assert impl["traceability"] and impl["business-rules"] and impl["rule-catalog"]
+    assert impl["rule-enrichment"]
     assert not impl["test-strategy"]
 
     # After the discovery artifact exists, features becomes the next stage.
@@ -134,7 +139,7 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
     ]
     assert status["next_stage"] == "rule-catalog"
 
-    # Once rule-catalog also exists, no implemented stage remains.
+    # Once rule-catalog exists, enrichment is next.
     (artifact_dir / "business-rule-catalog.json").write_text("{}", encoding="utf-8")
     status = client.get("/pipeline-status").json()
     assert status["completed_stages"] == [
@@ -144,5 +149,19 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
         "traceability",
         "business-rules",
         "rule-catalog",
+    ]
+    assert status["next_stage"] == "rule-enrichment"
+
+    # Once enrichment also exists, no implemented stage remains.
+    (artifact_dir / "enriched-business-rules.json").write_text("{}", encoding="utf-8")
+    status = client.get("/pipeline-status").json()
+    assert status["completed_stages"] == [
+        "discovery",
+        "features",
+        "domains",
+        "traceability",
+        "business-rules",
+        "rule-catalog",
+        "rule-enrichment",
     ]
     assert status["next_stage"] is None
