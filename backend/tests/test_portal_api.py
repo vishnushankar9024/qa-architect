@@ -39,21 +39,37 @@ def test_end_to_end_portal_flow() -> None:
     assert repo_source.json()["status"] == "Uploaded"
 
     doc_source = client.post(
-        f"/projects/{project_id}/sources/document",
-        json={
-            "sourceType": "Markdown",
-            "fileName": "requirements.md",
-            "fileSizeBytes": 2048,
-            "createdBy": "qa.architect",
-        },
+        f"/projects/{project_id}/sources/documents",
+        data={"createdBy": "qa.architect"},
+        files=[
+            (
+                "files",
+                (
+                    "requirements.md",
+                    b"# Requirements\n- Billing validation\n",
+                    "text/markdown",
+                ),
+            ),
+            (
+                "files",
+                (
+                    "flows.txt",
+                    b"Flow 1: validate invoice",
+                    "text/plain",
+                ),
+            ),
+        ],
     )
     assert doc_source.status_code == 200
-    assert doc_source.json()["metadata"]["fileName"] == "requirements.md"
+    uploaded_sources = doc_source.json()
+    assert len(uploaded_sources) == 2
+    assert uploaded_sources[0]["metadata"]["fileName"] == "requirements.md"
+    assert uploaded_sources[1]["metadata"]["fileName"] == "flows.txt"
 
     generate = client.post(f"/knowledge-base/{project_id}")
     assert generate.status_code == 200
     knowledge = generate.json()
-    assert len(knowledge["features"]) > 0
+    assert len(knowledge["features"]) >= 3
     assert len(knowledge["domains"]) > 0
     assert len(knowledge["business_rules"]) > 0
     assert len(knowledge["flows"]) > 0

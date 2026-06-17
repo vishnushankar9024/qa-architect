@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from pathlib import Path
+
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.schemas import (
     DocumentSourceCreateRequest,
@@ -27,6 +29,28 @@ DOCUMENT_SOURCE_TYPES = {
     SourceType.markdown,
 }
 REPOSITORY_SOURCE_TYPES = {SourceType.github, SourceType.gitlab, SourceType.bitbucket}
+DOCUMENT_EXTENSION_MAP = {
+    ".pdf": SourceType.pdf,
+    ".docx": SourceType.docx,
+    ".xlsx": SourceType.xlsx,
+    ".pptx": SourceType.pptx,
+    ".txt": SourceType.txt,
+    ".md": SourceType.markdown,
+    ".markdown": SourceType.markdown,
+}
+
+
+def _document_source_type(file_name: str) -> SourceType:
+    extension = Path(file_name).suffix.lower()
+    source_type = DOCUMENT_EXTENSION_MAP.get(extension)
+    if not source_type:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Unsupported file type. Allowed: PDF, DOCX, XLSX, PPTX, TXT, Markdown"
+            ),
+        )
+    return source_type
 
 
 @router.get("/projects", response_model=list[Project])
@@ -104,3 +128,33 @@ def add_document_source(
     )
     store.sources[project_id].append(source.model_dump())
     return source
+
+
+@router.post("/projects/{project_id}/sources/documents", response_model=list[KnowledgeSource])
+async def add_document_sources(
+    project_id: str,
+    createdBy: str = Form(min_length=2, max_length=120),
+    files: list[UploadFile] = File(...),
+) -> list[KnowledgeSource]:
+    if project_id not in store.projects:
+        raise HTTPException(status_code=404, detail="Project not found")
+    created_sources: list[KnowledgeSource] = []
+    for upload in files:
+        source_type = _document_source_type(upload.filename or "")
+        source = KnowledgeSource(
+            id=generate_id("src"),
+            projectId=project_id,
+            sourceType=source_type,
+            status=SourceStatus.uploaded,
+            createdBy=createdBy,
+            createdDate=utc_now(),
+            metadata={
+                "fileName": upload.filename or "unknown",
+                "fileSizeBytes": upload.size or 0,
+                "mimeType": upload.content_type or "application/octet-stream",
+            },
+        )
+        store.sources[project_id].append(source.model_dump())
+        created_sources.append(source)
+        await upload.close()
+    return created_sources

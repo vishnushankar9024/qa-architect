@@ -144,13 +144,16 @@ export default function App() {
                 await loadProjectData(selectedProjectId);
                 setSuccessMessage("Repository source registered.");
               }}
-              onAddDocumentSource={async (payload) => {
+              onUploadDocumentSources={async (files) => {
                 if (!selectedProjectId) {
                   return;
                 }
-                await api.addDocumentSource(selectedProjectId, payload);
+                await api.uploadDocumentSources(selectedProjectId, {
+                  createdBy: "qa.architect",
+                  files
+                });
                 await loadProjectData(selectedProjectId);
-                setSuccessMessage("Document metadata registered.");
+                setSuccessMessage(`Document metadata registered for ${files.length} file(s).`);
               }}
             />
           }

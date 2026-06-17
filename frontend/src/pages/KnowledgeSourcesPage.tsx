@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   MenuItem,
   Stack,
   Table,
@@ -28,16 +29,10 @@ interface KnowledgeSourcesPageProps {
     url: string;
     createdBy: string;
   }) => Promise<void>;
-  onAddDocumentSource: (payload: {
-    sourceType: string;
-    fileName: string;
-    fileSizeBytes: number;
-    createdBy: string;
-  }) => Promise<void>;
+  onUploadDocumentSources: (files: File[]) => Promise<void>;
 }
 
 const repositoryTypes = ["GitHub URL", "GitLab URL", "Bitbucket URL"];
-const documentTypes = ["PDF", "DOCX", "XLSX", "PPTX", "TXT", "Markdown"];
 
 export function KnowledgeSourcesPage({
   projects,
@@ -45,13 +40,11 @@ export function KnowledgeSourcesPage({
   sources,
   onSelectProject,
   onAddRepositorySource,
-  onAddDocumentSource
+  onUploadDocumentSources
 }: KnowledgeSourcesPageProps) {
   const [repoType, setRepoType] = useState(repositoryTypes[0]);
   const [repoUrl, setRepoUrl] = useState("");
-  const [documentType, setDocumentType] = useState(documentTypes[0]);
-  const [fileName, setFileName] = useState("");
-  const [fileSizeBytes, setFileSizeBytes] = useState("0");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   return (
     <Stack spacing={3}>
@@ -107,45 +100,41 @@ export function KnowledgeSourcesPage({
         <Card sx={{ flex: 1 }}>
           <CardContent>
             <Stack spacing={2}>
-              <Typography variant="h6">Document Source (metadata only)</Typography>
-              <TextField
-                select
-                label="Document Type"
-                value={documentType}
-                onChange={(event) => setDocumentType(event.target.value)}
-              >
-                {documentTypes.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                label="File Name"
-                placeholder="requirements.md"
-                value={fileName}
-                onChange={(event) => setFileName(event.target.value)}
-              />
-              <TextField
-                label="File Size (bytes)"
-                value={fileSizeBytes}
-                onChange={(event) => setFileSizeBytes(event.target.value)}
-              />
+              <Typography variant="h6">Document Sources (multi-file, metadata only)</Typography>
+              <Alert severity="info">
+                Supported: PDF, DOCX, XLSX, PPTX, TXT, Markdown. Multiple files can be uploaded
+                together.
+              </Alert>
+              <Button component="label" variant="outlined" disabled={!selectedProjectId}>
+                Select Documents
+                <input
+                  hidden
+                  multiple
+                  type="file"
+                  accept=".pdf,.docx,.xlsx,.pptx,.txt,.md,.markdown"
+                  onChange={(event) => {
+                    const files = Array.from(event.target.files ?? []);
+                    setSelectedFiles(files);
+                    event.target.value = "";
+                  }}
+                />
+              </Button>
+              {selectedFiles.length > 0 ? (
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {selectedFiles.map((file) => (
+                    <Chip key={`${file.name}-${file.lastModified}`} label={file.name} />
+                  ))}
+                </Stack>
+              ) : null}
               <Button
                 variant="contained"
-                disabled={!selectedProjectId || !fileName}
+                disabled={!selectedProjectId || selectedFiles.length === 0}
                 onClick={async () => {
-                  await onAddDocumentSource({
-                    sourceType: documentType,
-                    fileName,
-                    fileSizeBytes: Number(fileSizeBytes),
-                    createdBy: "qa.architect"
-                  });
-                  setFileName("");
-                  setFileSizeBytes("0");
+                  await onUploadDocumentSources(selectedFiles);
+                  setSelectedFiles([]);
                 }}
               >
-                Register Document
+                Register Documents
               </Button>
             </Stack>
           </CardContent>

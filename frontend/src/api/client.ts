@@ -8,11 +8,15 @@ import type {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const isMultipartForm = options?.body instanceof FormData;
+  const headers = isMultipartForm
+    ? options?.headers
+    : {
+        "Content-Type": "application/json",
+        ...(options?.headers ?? {})
+      };
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options?.headers ?? {})
-    },
+    headers,
     ...options
   });
 
@@ -61,6 +65,17 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload)
     }),
+  uploadDocumentSources: async (projectId: string, payload: { createdBy: string; files: File[] }) => {
+    const formData = new FormData();
+    formData.append("createdBy", payload.createdBy);
+    payload.files.forEach((file) => {
+      formData.append("files", file);
+    });
+    return request<KnowledgeSource[]>(`/projects/${projectId}/sources/documents`, {
+      method: "POST",
+      body: formData
+    });
+  },
   listSources: (projectId: string) =>
     request<KnowledgeSource[]>(`/projects/${projectId}/sources`),
   generateKnowledgeBase: (projectId: string) =>
