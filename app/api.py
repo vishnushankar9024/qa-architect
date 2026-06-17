@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from app import __version__, pipeline
+from app.business_rules import router as business_rules_router
 from app.config import get_settings
 from app.discovery import discover_router
 from app.discovery import router as discovery_router
@@ -66,6 +67,7 @@ def create_app() -> FastAPI:
     app.include_router(features_router)
     app.include_router(domains_router)
     app.include_router(traceability_router)
+    app.include_router(business_rules_router)
     app.include_router(knowledge_router)
     app.include_router(qa_router)
     app.include_router(github_router)

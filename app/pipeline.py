@@ -45,7 +45,13 @@ REPOSITORY_SCANNING_STAGE = "discovery"
 
 # Stages that currently have a runnable implementation (the rest are reserved
 # placeholders in the chain).
-IMPLEMENTED_STAGES: tuple[str, ...] = ("discovery", "features", "domains", "traceability")
+IMPLEMENTED_STAGES: tuple[str, ...] = (
+    "discovery",
+    "features",
+    "domains",
+    "traceability",
+    "business-rules",
+)
 
 _ARTIFACT_BY_STAGE: dict[str, str] = {stage: name for stage, name in PIPELINE}
 _STAGE_ORDER: list[str] = [stage for stage, _ in PIPELINE]

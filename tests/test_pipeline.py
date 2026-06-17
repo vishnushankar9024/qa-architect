@@ -95,8 +95,8 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
     # Implemented flags are reported.
     impl = {s["stage"]: s["implemented"] for s in status["stages"]}
     assert impl["discovery"] and impl["features"] and impl["domains"]
-    assert impl["traceability"]
-    assert not impl["business-rules"]
+    assert impl["traceability"] and impl["business-rules"]
+    assert not impl["test-strategy"]
 
     # After the discovery artifact exists, features becomes the next stage.
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -112,8 +112,20 @@ def test_pipeline_status_progression(artifact_dir: Path) -> None:
     assert status["completed_stages"] == ["discovery", "features", "domains"]
     assert status["next_stage"] == "traceability"
 
-    # Once traceability also exists, no implemented stage remains.
+    # Once traceability exists, business-rules is next.
     (artifact_dir / "traceability.json").write_text("{}", encoding="utf-8")
     status = client.get("/pipeline-status").json()
     assert status["completed_stages"] == ["discovery", "features", "domains", "traceability"]
+    assert status["next_stage"] == "business-rules"
+
+    # Once business-rules also exists, no implemented stage remains.
+    (artifact_dir / "business-rules.json").write_text("{}", encoding="utf-8")
+    status = client.get("/pipeline-status").json()
+    assert status["completed_stages"] == [
+        "discovery",
+        "features",
+        "domains",
+        "traceability",
+        "business-rules",
+    ]
     assert status["next_stage"] is None

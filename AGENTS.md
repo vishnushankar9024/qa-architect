@@ -28,8 +28,9 @@ Standing guidance for implementation/coding tasks in this repo.
 
 QA Architect is a Python 3.12 + FastAPI + Pydantic service. Discovery (`POST
 /discover`), Feature Discovery (`POST /features`), Domain Discovery (`POST
-/domains`), and the Traceability Engine (`POST /traceability`) are implemented
-with deterministic parsing; `knowledge`/`qa`/`github` remain placeholders.
+/domains`), Traceability (`POST /traceability`), and Business Rule Discovery
+(`POST /business-rules`) are implemented with deterministic parsing;
+`knowledge`/`qa`/`github` remain placeholders.
 AI/LLM features are intentionally not implemented yet.
 
 ### Services

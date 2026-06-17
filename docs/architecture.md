@@ -11,6 +11,7 @@ AI features are intentionally **not** implemented yet.
 | Features | `app/features` | Group discovery artifacts into business features. |
 | Domains | `app/domains` | Group features into business domains. |
 | Traceability | `app/traceability` | Join artifacts into a domain→feature→relationships graph. |
+| Business Rules | `app/business_rules` | Infer deterministic business rule candidates from existing artifacts. |
 | Knowledge | `app/knowledge` | Store and retrieve project knowledge. |
 | QA | `app/qa` | Build test plans and test cases. |
 | GitHub | `app/github` | GitHub integration / API access. |
@@ -26,7 +27,7 @@ application.json        (Discovery)
   -> feature-inventory.json   (Feature Discovery)
   -> domain-model.json        (Domain Discovery)
   -> traceability.json        (Traceability Engine)
-  -> business-rules.json      (Business Rules — not implemented yet)
+  -> business-rules.json      (Business Rule Discovery)
   -> test-strategy.json       (Test Strategy — not implemented yet)
   -> test-scenarios.json      (Test Scenarios — not implemented yet)
 ```
@@ -82,6 +83,14 @@ Current endpoints (all placeholders):
   apis, collections}` graph, written to `outputs/traceability.json`. Implemented
   in `app/traceability/` (`engine.py` + `service.py` + `artifacts.py`).
 - `GET /traceability` — return the saved `outputs/traceability.json` artifact.
+- `POST /business-rules` — business rule discovery stage. Consumes
+  `application.json` + `feature-inventory.json` + `domain-model.json` +
+  `traceability.json` only (no repo reads/clones, no LLM) and infers
+  deterministic rule candidates with confidence scores, written to
+  `outputs/business-rules.json`. Implemented in `app/business_rules/`
+  (`engine.py` + `service.py` + `artifacts.py`).
+- `GET /business-rules` — return the saved `outputs/business-rules.json`
+  artifact.
 - `GET /discovery/repositories` — list known repositories.
 - `GET /knowledge/entries` — list knowledge entries.
 - `GET /qa/test-plan?repository=<full_name>` — build a placeholder test plan.

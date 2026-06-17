@@ -1,5 +1,6 @@
 """Pydantic data models shared across QA Architect modules."""
 
+from app.models.business_rules import BusinessRule, BusinessRulesModel, DomainBusinessRules
 from app.models.common import HealthStatus, Message
 from app.models.discovery import (
     AngularInsights,
@@ -29,6 +30,9 @@ __all__ = [
     "FeatureTrace",
     "DomainTrace",
     "TraceabilityModel",
+    "BusinessRule",
+    "DomainBusinessRules",
+    "BusinessRulesModel",
     "KnowledgeEntry",
     "TestCase",
     "TestPlan",

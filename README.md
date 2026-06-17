@@ -71,6 +71,8 @@ optional for the scaffold.
 | GET | `/domains` | Return the saved `outputs/domain-model.json` domain model. |
 | POST | `/traceability` | Join discovery/feature/domain artifacts into a domain→feature→relationships graph (writes `outputs/traceability.json`). |
 | GET | `/traceability` | Return the saved `outputs/traceability.json` graph. |
+| POST | `/business-rules` | Infer deterministic business rule candidates from existing artifacts (writes `outputs/business-rules.json`). |
+| GET | `/business-rules` | Return the saved `outputs/business-rules.json` artifact. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
@@ -239,6 +241,40 @@ Output shape (`outputs/traceability.json`):
 
 Run `POST /domains` (and its upstream stages) first; enforced by the Artifact
 First Rule.
+
+## Business Rule Discovery (`POST /business-rules`)
+
+The fifth stage. It **consumes `application.json` + `feature-inventory.json` +
+`domain-model.json` + `traceability.json` only** (no repo reads/clones, no LLM)
+and deterministically infers business rule candidates from routes, APIs,
+collections, naming conventions, and workflow patterns.
+
+```bash
+curl -X POST http://localhost:8000/business-rules   # builds outputs/business-rules.json
+curl http://localhost:8000/business-rules           # returns the saved artifact
+```
+
+Output shape (`outputs/business-rules.json`):
+
+```json
+{
+  "domains": [
+    {
+      "domain": "RACI Management",
+      "rules": [
+        {
+          "id": "BR-001",
+          "rule": "Only accountable users should approve items in RACI Approval.",
+          "confidence": 0.88
+        }
+      ]
+    }
+  ]
+}
+```
+
+Run `POST /traceability` (and its upstream stages) first; enforced by the
+Artifact First Rule.
 
 ## Testing
 
