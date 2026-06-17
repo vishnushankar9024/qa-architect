@@ -12,6 +12,7 @@ AI features are intentionally **not** implemented yet.
 | Domains | `app/domains` | Group features into business domains. |
 | Traceability | `app/traceability` | Join artifacts into a domain→feature→relationships graph. |
 | Business Rules | `app/business_rules` | Infer deterministic business rule candidates from existing artifacts. |
+| Rule Catalog | `app/rule_catalog` | Merge generated rules with governed human overrides. |
 | Knowledge | `app/knowledge` | Store and retrieve project knowledge. |
 | QA | `app/qa` | Build test plans and test cases. |
 | GitHub | `app/github` | GitHub integration / API access. |
@@ -28,6 +29,7 @@ application.json        (Discovery)
   -> domain-model.json        (Domain Discovery)
   -> traceability.json        (Traceability Engine)
   -> business-rules.json      (Business Rule Discovery)
+  -> business-rule-catalog.json (Rule Catalog)
   -> test-strategy.json       (Test Strategy — not implemented yet)
   -> test-scenarios.json      (Test Scenarios — not implemented yet)
 ```
@@ -91,6 +93,15 @@ Current endpoints (all placeholders):
   (`engine.py` + `service.py` + `artifacts.py`).
 - `GET /business-rules` — return the saved `outputs/business-rules.json`
   artifact.
+- `POST /rule-catalog/build` — governed rule catalog layer. Consumes
+  `business-rules.json` and optional `business-rule-overrides.json` only (no repo
+  reads/clones, no LLM), creates empty overrides when absent, and writes
+  `outputs/business-rule-catalog.json` plus
+  `outputs/business-rule-catalog.md`. Implemented in `app/rule_catalog/`.
+- `GET /rule-catalog` — return the saved `outputs/business-rule-catalog.json`
+  artifact.
+- `GET /rule-catalog/markdown` — return the saved
+  `outputs/business-rule-catalog.md` artifact.
 - `GET /discovery/repositories` — list known repositories.
 - `GET /knowledge/entries` — list knowledge entries.
 - `GET /qa/test-plan?repository=<full_name>` — build a placeholder test plan.

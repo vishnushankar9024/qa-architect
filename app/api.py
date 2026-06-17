@@ -16,6 +16,7 @@ from app.knowledge import router as knowledge_router
 from app.models.common import HealthStatus
 from app.models.pipeline import PipelineStatus
 from app.qa import router as qa_router
+from app.rule_catalog import router as rule_catalog_router
 from app.traceability import router as traceability_router
 
 
@@ -68,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(domains_router)
     app.include_router(traceability_router)
     app.include_router(business_rules_router)
+    app.include_router(rule_catalog_router)
     app.include_router(knowledge_router)
     app.include_router(qa_router)
     app.include_router(github_router)

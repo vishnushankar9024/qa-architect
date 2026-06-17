@@ -14,6 +14,12 @@ from app.models.feature import Feature, FeatureInventory
 from app.models.knowledge import KnowledgeEntry
 from app.models.traceability import DomainTrace, FeatureTrace, TraceabilityModel
 from app.models.qa import TestCase, TestPlan
+from app.models.rule_catalog import (
+    CatalogRule,
+    RuleCatalogModel,
+    RuleCatalogSummary,
+    RuleOverridesModel,
+)
 
 __all__ = [
     "HealthStatus",
@@ -33,6 +39,10 @@ __all__ = [
     "BusinessRule",
     "DomainBusinessRules",
     "BusinessRulesModel",
+    "CatalogRule",
+    "RuleOverridesModel",
+    "RuleCatalogSummary",
+    "RuleCatalogModel",
     "KnowledgeEntry",
     "TestCase",
     "TestPlan",

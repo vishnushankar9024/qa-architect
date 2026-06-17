@@ -73,6 +73,9 @@ optional for the scaffold.
 | GET | `/traceability` | Return the saved `outputs/traceability.json` graph. |
 | POST | `/business-rules` | Infer deterministic business rule candidates from existing artifacts (writes `outputs/business-rules.json`). |
 | GET | `/business-rules` | Return the saved `outputs/business-rules.json` artifact. |
+| POST | `/rule-catalog/build` | Merge generated rules with human overrides (writes catalog JSON and Markdown artifacts). |
+| GET | `/rule-catalog` | Return the saved `outputs/business-rule-catalog.json` artifact. |
+| GET | `/rule-catalog/markdown` | Return the saved `outputs/business-rule-catalog.md` artifact. |
 | GET | `/knowledge/entries` | List knowledge entries. |
 | GET | `/qa/test-plan?repository=<full_name>` | Build a placeholder test plan. |
 | GET | `/github/status` | Report GitHub integration status. |
@@ -275,6 +278,47 @@ Output shape (`outputs/business-rules.json`):
 
 Run `POST /traceability` (and its upstream stages) first; enforced by the
 Artifact First Rule.
+
+## Business Rule Catalog (`POST /rule-catalog/build`)
+
+The governed catalog layer. It **consumes `outputs/business-rules.json` only**
+plus optional human overrides from `outputs/business-rule-overrides.json`. It
+never reads or clones repositories and makes no LLM calls.
+
+```bash
+curl -X POST http://localhost:8000/rule-catalog/build
+curl http://localhost:8000/rule-catalog
+curl http://localhost:8000/rule-catalog/markdown
+```
+
+Artifacts:
+
+- `outputs/business-rule-overrides.json` — human-authored rules and overrides.
+- `outputs/business-rule-catalog.json` — merged generated + human catalog.
+- `outputs/business-rule-catalog.md` — human-readable catalog.
+
+Rule shape:
+
+```json
+{
+  "id": "BR-PMW-001",
+  "domain": "Workflow, Approval and RACI",
+  "feature": "Checklist",
+  "title": "Checklist completion required",
+  "description": "All mandatory checklist items must be completed before review.",
+  "rule_type": "Workflow",
+  "priority": "High",
+  "source": "Human",
+  "author": "Vishnu Shankar",
+  "status": "Approved",
+  "evidence": [],
+  "tags": ["workflow", "checklist"]
+}
+```
+
+Supported statuses are `Generated`, `Draft`, `Reviewed`, `Approved`, and
+`Deprecated`. Human overrides use the same `id` to take precedence over a
+generated rule, while retaining generated traceability in the catalog.
 
 ## Testing
 

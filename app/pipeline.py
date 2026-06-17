@@ -12,6 +12,7 @@ Allowed chain (each arrow = "consumes"):
     -> domain-model.json
     -> traceability.json
     -> business-rules.json
+    -> business-rule-catalog.json
     -> test-strategy.json
     -> test-scenarios.json
 
@@ -36,6 +37,7 @@ PIPELINE: tuple[tuple[str, str], ...] = (
     ("domains", "domain-model.json"),
     ("traceability", "traceability.json"),
     ("business-rules", "business-rules.json"),
+    ("rule-catalog", "business-rule-catalog.json"),
     ("test-strategy", "test-strategy.json"),
     ("test-scenarios", "test-scenarios.json"),
 )
@@ -51,6 +53,7 @@ IMPLEMENTED_STAGES: tuple[str, ...] = (
     "domains",
     "traceability",
     "business-rules",
+    "rule-catalog",
 )
 
 _ARTIFACT_BY_STAGE: dict[str, str] = {stage: name for stage, name in PIPELINE}
