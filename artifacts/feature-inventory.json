@@ -1,0 +1,131 @@
+{
+  "features": [
+    {
+      "id": "FEAT-001",
+      "name": "Create Project",
+      "domain": "Project Management",
+      "entity": "Project",
+      "description": "Initiate and create a new construction project; submit details for review and approval before activation.",
+      "apis": ["API-001"],
+      "routes": ["/projects/new"]
+    },
+    {
+      "id": "FEAT-002",
+      "name": "Assign Project Team",
+      "domain": "Project Management",
+      "entity": "Project",
+      "description": "Assign the project manager and delegate work package responsibilities to team members.",
+      "apis": ["API-002"],
+      "routes": ["/projects/team"]
+    },
+    {
+      "id": "FEAT-003",
+      "name": "Create Template",
+      "domain": "Project Management",
+      "entity": "Template",
+      "description": "Create and define a reusable template with default phases and tasks for new projects.",
+      "apis": ["API-003"],
+      "routes": ["/templates/new"]
+    },
+    {
+      "id": "FEAT-004",
+      "name": "Assign RACI Matrix",
+      "domain": "Workflow, Approval and RACI",
+      "entity": "RACI Assignment",
+      "description": "Assign Responsible, Accountable, Consulted and Informed roles and delegate accountability across activities.",
+      "apis": ["API-004"],
+      "routes": ["/raci"]
+    },
+    {
+      "id": "FEAT-005",
+      "name": "Execute Workstation Activity",
+      "domain": "Execution and Field",
+      "entity": "Workstation",
+      "description": "Initiate the workstation, assign the field crew, execute the work, then complete and close the activity.",
+      "apis": ["API-005"],
+      "routes": ["/workstations"]
+    },
+    {
+      "id": "FEAT-006",
+      "name": "Complete Inspection Checklist",
+      "domain": "Quality and Inspection",
+      "entity": "Checklist",
+      "description": "Initiate and complete the inspection checklist, then review and approve the results.",
+      "apis": ["API-006"],
+      "routes": ["/checklists"]
+    },
+    {
+      "id": "FEAT-007",
+      "name": "Review and Approve Document",
+      "domain": "Document Management",
+      "entity": "Document",
+      "description": "Submit a document for review, then approve or reject it before it becomes the controlled version.",
+      "apis": ["API-007"],
+      "routes": ["/documents/review"]
+    },
+    {
+      "id": "FEAT-008",
+      "name": "Send Notification",
+      "domain": "Notifications",
+      "entity": "Notification",
+      "description": "Detect a workflow event and notify the relevant stakeholders by email and in-app alert.",
+      "apis": ["API-008"],
+      "routes": ["/notifications"]
+    },
+    {
+      "id": "FEAT-009",
+      "name": "Synchronize Planner Schedule",
+      "domain": "Integrations",
+      "entity": "Planner",
+      "description": "Map activities and synchronize the schedule with the external planner, then notify owners of changes.",
+      "apis": ["API-009"],
+      "routes": ["/integrations/planner"]
+    },
+    {
+      "id": "FEAT-010",
+      "name": "Create User Account",
+      "domain": "User and Access Management",
+      "entity": "User",
+      "description": "Create a user account, set the role and activate access to the platform.",
+      "apis": ["API-010"],
+      "routes": ["/admin/users/new"]
+    },
+    {
+      "id": "FEAT-011",
+      "name": "Approve Vendor Onboarding",
+      "domain": "Vendor Management",
+      "entity": "Vendor",
+      "description": "Submit a vendor onboarding request, review compliance records and approve or reject the vendor.",
+      "apis": ["API-011"],
+      "routes": ["/vendors/onboarding"]
+    }
+  ],
+  "apis": [
+    { "id": "API-001", "name": "Create Project", "method": "POST", "path": "/api/projects", "operation": "createProject", "domain": "Project Management", "entity": "Project" },
+    { "id": "API-002", "name": "Assign Project Team", "method": "POST", "path": "/api/projects/{id}/team", "operation": "assignProjectTeam", "domain": "Project Management", "entity": "Project" },
+    { "id": "API-003", "name": "Create Template", "method": "POST", "path": "/api/templates", "operation": "createTemplate", "domain": "Project Management", "entity": "Template" },
+    { "id": "API-004", "name": "Assign RACI Matrix", "method": "POST", "path": "/api/raci/assignments", "operation": "assignRaci", "domain": "Workflow, Approval and RACI", "entity": "RACI Assignment" },
+    { "id": "API-005", "name": "Execute Workstation Activity", "method": "POST", "path": "/api/workstations/{id}/execute", "operation": "executeWorkstation", "domain": "Execution and Field", "entity": "Workstation" },
+    { "id": "API-006", "name": "Complete Checklist", "method": "POST", "path": "/api/checklists/{id}/complete", "operation": "completeChecklist", "domain": "Quality and Inspection", "entity": "Checklist" },
+    { "id": "API-007", "name": "Approve Document", "method": "POST", "path": "/api/documents/{id}/approve", "operation": "approveDocument", "domain": "Document Management", "entity": "Document" },
+    { "id": "API-008", "name": "Send Notification", "method": "POST", "path": "/api/notifications/send", "operation": "sendNotification", "domain": "Notifications", "entity": "Notification" },
+    { "id": "API-009", "name": "Sync Planner", "method": "POST", "path": "/api/planner/sync", "operation": "syncPlanner", "domain": "Integrations", "entity": "Planner" },
+    { "id": "API-010", "name": "Create User", "method": "POST", "path": "/api/users", "operation": "createUser", "domain": "User and Access Management", "entity": "User" },
+    { "id": "API-011", "name": "Approve Vendor", "method": "POST", "path": "/api/vendors/{id}/approve", "operation": "approveVendor", "domain": "Vendor Management", "entity": "Vendor" }
+  ],
+  "routes": [
+    { "path": "/projects/new", "name": "New Project", "domain": "Project Management", "entity": "Project" },
+    { "path": "/templates/new", "name": "New Template", "domain": "Project Management", "entity": "Template" },
+    { "path": "/integrations/planner", "name": "Planner Sync", "domain": "Integrations", "entity": "Planner" }
+  ],
+  "collections": [
+    {
+      "name": "PMWebX API",
+      "requests": [
+        { "id": "REQ-001", "name": "Create Project", "method": "POST", "entity": "Project" },
+        { "id": "REQ-002", "name": "Approve Document", "method": "POST", "entity": "Document" },
+        { "id": "REQ-003", "name": "Sync Planner", "method": "POST", "entity": "Planner" }
+      ]
+    }
+  ]
+}

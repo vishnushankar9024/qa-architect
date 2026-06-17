@@ -1,0 +1,33 @@
+{
+  "name": "PMWebX",
+  "description": "Construction project and program management platform (PMWeb-style) covering projects, workflows, RACI, document control, checklists, field execution and planner integration.",
+  "version": "5.0",
+  "domains": [
+    "Project Management",
+    "Workflow, Approval and RACI",
+    "Execution and Field",
+    "Quality and Inspection",
+    "Document Management",
+    "Notifications",
+    "Integrations",
+    "User and Access Management",
+    "Vendor Management"
+  ],
+  "modules": [
+    "Projects",
+    "Templates",
+    "RACI",
+    "Workstations",
+    "Checklists",
+    "Documents",
+    "Notifications",
+    "Planner",
+    "Users",
+    "Vendors"
+  ],
+  "integrations": [
+    { "name": "Primavera P6", "type": "planner-sync" },
+    { "name": "Microsoft Project", "type": "planner-sync" },
+    { "name": "SMTP Email Gateway", "type": "notification" }
+  ]
+}

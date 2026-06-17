@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qa-architect-flow-discovery"
+version = "1.0.0"
+description = "Deterministic, artifact-first Flow Discovery Engine for QA Architect"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+flow-discovery = "flow_discovery.cli:main"
+
+[tool.setuptools]
+packages = ["flow_discovery"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

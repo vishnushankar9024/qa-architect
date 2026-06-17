@@ -1,0 +1,15 @@
+{
+  "links": [
+    { "feature": "FEAT-001", "api": "API-001", "route": "/projects/new", "rule": "BR-001", "entity": "Project" },
+    { "feature": "FEAT-002", "api": "API-002", "route": "/projects/team", "entity": "Project" },
+    { "feature": "FEAT-003", "api": "API-003", "route": "/templates/new", "rule": "BR-006", "entity": "Template" },
+    { "feature": "FEAT-004", "api": "API-004", "route": "/raci", "rule": "BR-002", "entity": "RACI Assignment" },
+    { "feature": "FEAT-005", "api": "API-005", "route": "/workstations", "rule": "BR-009", "entity": "Workstation" },
+    { "feature": "FEAT-006", "api": "API-006", "route": "/checklists", "rule": "BR-003", "entity": "Checklist" },
+    { "feature": "FEAT-007", "api": "API-007", "route": "/documents/review", "rule": "BR-004", "entity": "Document" },
+    { "feature": "FEAT-008", "api": "API-008", "route": "/notifications", "rule": "BR-008", "entity": "Notification" },
+    { "feature": "FEAT-009", "api": "API-009", "route": "/integrations/planner", "rule": "BR-005", "entity": "Planner" },
+    { "feature": "FEAT-010", "api": "API-010", "route": "/admin/users/new", "rule": "BR-010", "entity": "User" },
+    { "feature": "FEAT-011", "api": "API-011", "route": "/vendors/onboarding", "rule": "BR-007", "entity": "Vendor" }
+  ]
+}
