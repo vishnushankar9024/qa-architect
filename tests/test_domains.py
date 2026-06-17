@@ -32,6 +32,11 @@ def _sample_inventory() -> FeatureInventory:
         "Opportunity Management",
         "Award Management",
         "Enquiry Management",
+        "Activitychecklist Management",
+        "Accountableinput Management",
+        "Activityfile Management",
+        "Alldelegationlog Management",
+        "Allocation Management",
         "Document Management",
         "Notification Management",
         "Widget Management",  # no taxonomy match -> General
@@ -48,15 +53,30 @@ def test_grouping_into_business_domains() -> None:
     names = {d.name for d in model.domains}
 
     assert "Identity and Access Management" in names
-    assert "Opportunity Management" in names
+    assert "Opportunity and Procurement Lifecycle" in names
+    assert "Project and Activity Management" in names
+    assert "Workflow, Approval and RACI" in names
+    assert "Document, File and Template Management" in names
+    assert "Reporting, Audit and Logs" in names
+    assert "Location and Asset Management" in names
 
     iam = _domain(model, "Identity and Access Management")
     assert set(iam.features) == {"Authentication", "Roles & Permissions", "User Management"}
 
-    opp = _domain(model, "Opportunity Management")
+    opp = _domain(model, "Opportunity and Procurement Lifecycle")
     assert {"Opportunity Management", "Award Management", "Enquiry Management"}.issubset(
         set(opp.features)
     )
+
+    assert "Activitychecklist Management" in _domain(
+        model, "Project and Activity Management"
+    ).features
+    assert "Accountableinput Management" in _domain(model, "Workflow, Approval and RACI").features
+    assert "Activityfile Management" in _domain(
+        model, "Document, File and Template Management"
+    ).features
+    assert "Alldelegationlog Management" in _domain(model, "Reporting, Audit and Logs").features
+    assert "Allocation Management" in _domain(model, "Location and Asset Management").features
 
 
 def test_unmatched_feature_goes_to_general() -> None:

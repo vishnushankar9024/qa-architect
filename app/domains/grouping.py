@@ -2,8 +2,8 @@
 
 Input is a :class:`~app.models.feature.FeatureInventory` (loaded from
 ``feature-inventory.json``). Each feature is matched against a fixed keyword
-taxonomy and assigned to the best-matching business domain. Features that match
-no domain are collected under "General".
+taxonomy using the artifact fields already present in the inventory. Features
+that match no domain are collected under "General".
 
 No LLMs, no repository access — pure rule-based processing.
 """
@@ -13,7 +13,9 @@ from __future__ import annotations
 import re
 
 from app.models.domain import Domain, DomainModel
-from app.models.feature import FeatureInventory
+from collections.abc import Iterable
+
+from app.models.feature import Feature, FeatureInventory
 
 # Ordered taxonomy of business domains -> matching keyword tokens (singular,
 # lowercased). Order is used as a deterministic tie-breaker.
@@ -41,16 +43,24 @@ _DOMAIN_TAXONOMY: tuple[tuple[str, set[str]], ...] = (
             "userlist",
             "usermanagement",
             "usermapping",
-            "account",
             "profile",
             "identity",
             "access",
-            "delegation",
-            "newdelegation",
+            "allocated",
+            "allocatedto",
+            "approver",
+            "createdby",
+            "department",
+            "designation",
+            "linemanager",
+            "manager",
+            "otp",
+            "password",
+            "vendorlogin",
         },
     ),
     (
-        "Opportunity Management",
+        "Opportunity and Procurement Lifecycle",
         {
             "opportunity",
             "opportunityhub",
@@ -64,19 +74,32 @@ _DOMAIN_TAXONOMY: tuple[tuple[str, set[str]], ...] = (
             "rfp",
             "award",
             "bid",
+            "bidder",
+            "commercial",
+            "procurement",
+            "quote",
+            "quotation",
             "tender",
+            "technicalbid",
+            "vendorbid",
             "proposal",
             "lead",
             "deal",
         },
     ),
     (
-        "Onboarding and Vendor Management",
+        "Vendor and Organization Management",
         {
             "onboarding",
             "afteronboarding",
             "vendor",
             "company",
+            "businessunit",
+            "consultant",
+            "contact",
+            "organization",
+            "organisation",
+            "partner",
             "supplier",
             "replacement",
             "newreplacement",
@@ -92,27 +115,102 @@ _DOMAIN_TAXONOMY: tuple[tuple[str, set[str]], ...] = (
             "evaluatorhub",
             "score",
             "scoring",
+            "evaluate",
             "ptc",
             "ptchub",
             "ptcdetail",
+            "ptccounter",
             "raci",
         },
     ),
     (
-        "Document and Template Management",
+        "Project and Activity Management",
+        {
+            "activity",
+            "activitychecklist",
+            "activityraci",
+            "activityrelationship",
+            "calendar",
+            "dependency",
+            "milestone",
+            "phase",
+            "primavera",
+            "project",
+            "projectallocation",
+            "schedule",
+            "stage",
+            "stagegate",
+            "task",
+            "timeline",
+        },
+    ),
+    (
+        "Workflow, Approval and RACI",
+        {
+            "accountable",
+            "accountableinput",
+            "action",
+            "actionitem",
+            "approval",
+            "approve",
+            "assignee",
+            "assignment",
+            "cancel",
+            "checklist",
+            "close",
+            "complete",
+            "consult",
+            "delegate",
+            "delegation",
+            "execute",
+            "execution",
+            "executionapproval",
+            "informed",
+            "initiate",
+            "publish",
+            "raci",
+            "reject",
+            "release",
+            "reopen",
+            "responsible",
+            "restore",
+            "return",
+            "skip",
+            "state",
+            "status",
+            "step",
+            "submit",
+            "workflow",
+        },
+    ),
+    (
+        "Document, File and Template Management",
         {
             "document",
             "documentmanager",
             "file",
+            "activityfile",
             "attachment",
             "blueprint",
             "template",
             "formtemplate",
             "addendum",
+            "blob",
+            "download",
+            "folder",
+            "form",
+            "getform",
+            "image",
+            "media",
+            "pdf",
+            "s3",
+            "signedurl",
+            "storage",
+            "upload",
         },
     ),
     (
-        "Configuration and Administration",
+        "Configuration and Master Data",
         {
             "configuration",
             "config",
@@ -125,6 +223,23 @@ _DOMAIN_TAXONOMY: tuple[tuple[str, set[str]], ...] = (
             "mapping",
             "definition",
             "function",
+            "appmodule",
+            "capability",
+            "category",
+            "counter",
+            "customfield",
+            "field",
+            "group",
+            "listvalue",
+            "lookup",
+            "master",
+            "metadata",
+            "module",
+            "process",
+            "property",
+            "section",
+            "setting",
+            "type",
         },
     ),
     (
@@ -136,27 +251,52 @@ _DOMAIN_TAXONOMY: tuple[tuple[str, set[str]], ...] = (
             "threadscenter",
             "discussion",
             "comment",
+            "email",
             "message",
             "community",
+            "ask",
+            "mail",
+            "mention",
+            "note",
+            "question",
+            "reply",
+            "send",
+            "subscriber",
         },
     ),
     (
-        "Workflow and Execution",
+        "Reporting, Audit and Logs",
         {
-            "workflow",
-            "execution",
-            "timeline",
-            "step",
-            "instruction",
-            "approval",
-            "projectallocation",
-            "structure",
-            "itemboard",
-            "myitem",
-            "preview",
-            "group",
-            "cost",
-            "blueprinthub",
+            "activitylog",
+            "alldelegationlog",
+            "analytics",
+            "audit",
+            "dashboard",
+            "delegationlog",
+            "export",
+            "history",
+            "log",
+            "range",
+            "report",
+            "revision",
+            "summary",
+            "version",
+        },
+    ),
+    (
+        "Location and Asset Management",
+        {
+            "allocation",
+            "area",
+            "asset",
+            "city",
+            "country",
+            "equipment",
+            "location",
+            "region",
+            "site",
+            "unit",
+            "zone",
         },
     ),
 )
@@ -183,34 +323,63 @@ def _singularize(word: str) -> str:
     return w
 
 
-def _feature_tokens(name: str) -> set[str]:
-    """Tokenize a feature name into normalized, singularized keyword tokens."""
+def _split_camel(value: str) -> str:
+    """Add token boundaries to camel/Pascal case names."""
 
-    parts = re.split(r"[^a-z0-9]+", name.lower())
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", value)
+
+
+def _feature_values(feature: Feature) -> list[str]:
+    """Return artifact fields that can carry business-domain signals."""
+
+    values = [feature.name]
+    values.extend(feature.modules)
+    values.extend(feature.routes)
+    values.extend(feature.apis)
+    values.extend(feature.collections)
+    return values
+
+
+def _tokens(values: Iterable[str]) -> set[str]:
+    """Tokenize artifact values into normalized, singularized keyword tokens."""
+
     tokens: set[str] = set()
-    for part in parts:
-        if not part or part in _STOPWORDS:
-            continue
-        tokens.add(part)
-        tokens.add(_singularize(part))
-        # Also add the collapsed/compact form (e.g. "user-management" pieces).
-    # Compact form of the whole name (no separators) helps match composite keys
-    # like "opportunityhub" / "usermanagement".
-    compact = re.sub(r"[^a-z0-9]", "", name.lower())
-    if compact and compact not in _STOPWORDS:
-        tokens.add(compact)
-        tokens.add(_singularize(compact))
+    for value in values:
+        normalized = _split_camel(value).lower()
+        parts = re.split(r"[^a-z0-9]+", normalized)
+        for part in parts:
+            if not part or part in _STOPWORDS:
+                continue
+            tokens.add(part)
+            tokens.add(_singularize(part))
+        compact = re.sub(r"[^a-z0-9]", "", normalized)
+        if compact and compact not in _STOPWORDS:
+            tokens.add(compact)
+            tokens.add(_singularize(compact))
     return tokens
 
 
-def _match_domain(feature_name: str) -> str | None:
+def _keyword_score(tokens: set[str], keyword: str) -> int:
+    """Score one taxonomy keyword against observed feature tokens."""
+
+    if keyword in tokens:
+        return 3
+    if len(keyword) < 4:
+        return 0
+    for token in tokens:
+        if len(token) >= 4 and (keyword in token or token in keyword):
+            return 2 if len(keyword) >= 6 else 1
+    return 0
+
+
+def _match_domain(feature: Feature) -> str | None:
     """Return the best-matching domain name for a feature, or ``None``."""
 
-    tokens = _feature_tokens(feature_name)
+    tokens = _tokens(_feature_values(feature))
     best_domain: str | None = None
     best_score = 0
     for domain_name, keywords in _DOMAIN_TAXONOMY:
-        score = len(tokens & keywords)
+        score = sum(_keyword_score(tokens, keyword) for keyword in keywords)
         if score > best_score:
             best_score = score
             best_domain = domain_name
@@ -222,7 +391,7 @@ def build_domain_model(inventory: FeatureInventory) -> DomainModel:
 
     grouped: dict[str, set[str]] = {}
     for feature in inventory.features:
-        domain = _match_domain(feature.name) or _GENERAL_DOMAIN
+        domain = _match_domain(feature) or _GENERAL_DOMAIN
         grouped.setdefault(domain, set()).add(feature.name)
 
     # Emit domains in taxonomy order, then any extras alphabetically, General last.
