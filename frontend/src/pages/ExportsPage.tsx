@@ -17,7 +17,7 @@ export function ExportsPage({
   selectedProjectId,
   onSelectProject,
   onExport
-}: ExportsPageProps): JSX.Element {
+}: ExportsPageProps) {
   const [content, setContent] = useState("");
 
   return (

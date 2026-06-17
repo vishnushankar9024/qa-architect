@@ -11,7 +11,7 @@ import { ProjectsPage } from "./pages/ProjectsPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import type { DashboardMetrics, KnowledgeBase, KnowledgeSource, Project, ReviewableItem } from "./types";
 
-export default function App(): JSX.Element {
+export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [sources, setSources] = useState<KnowledgeSource[]>([]);

@@ -24,7 +24,7 @@ export function ReviewPage({
   onSelectProject,
   items,
   onReview
-}: ReviewPageProps): JSX.Element {
+}: ReviewPageProps) {
   return (
     <Stack spacing={3}>
       <Typography variant="h4">{title}</Typography>

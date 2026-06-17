@@ -12,7 +12,7 @@ export function ProjectSelector({
   projects,
   selectedProjectId,
   onSelect
-}: ProjectSelectorProps): JSX.Element {
+}: ProjectSelectorProps) {
   return (
     <FormControl fullWidth size="small">
       <InputLabel id="project-select-label">Project</InputLabel>

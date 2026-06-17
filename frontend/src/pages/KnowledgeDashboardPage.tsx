@@ -16,7 +16,7 @@ function MetricCard({
 }: {
   label: string;
   value: string | number;
-}): JSX.Element {
+}) {
   return (
     <Card>
       <CardContent>
@@ -34,7 +34,7 @@ export function KnowledgeDashboardPage({
   selectedProjectId,
   onSelectProject,
   metrics
-}: KnowledgeDashboardPageProps): JSX.Element {
+}: KnowledgeDashboardPageProps) {
   return (
     <Stack spacing={3}>
       <Typography variant="h4">Knowledge Dashboard</Typography>

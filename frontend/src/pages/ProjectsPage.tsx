@@ -36,7 +36,7 @@ export function ProjectsPage({
   onCreateProject,
   onGenerateKnowledgeBase,
   feedback
-}: ProjectsPageProps): JSX.Element {
+}: ProjectsPageProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [createdBy, setCreatedBy] = useState("qa.architect");

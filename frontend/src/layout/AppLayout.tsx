@@ -33,7 +33,7 @@ const navItems = [
   { label: "Exports", to: "/exports", icon: <UploadFileIcon /> }
 ];
 
-export function AppLayout({ children }: { children: React.ReactNode }): JSX.Element {
+export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "grey.100" }}>
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>

@@ -82,6 +82,11 @@ export const api = {
     }),
   getDashboardMetrics: (projectId: string) =>
     request<DashboardMetrics>(`/knowledge-base/${projectId}/dashboard`),
-  exportKnowledge: (projectId: string, format: "json" | "markdown" | "csv") =>
-    request<string>(`/export/${projectId}?format=${format}`)
+  exportKnowledge: async (projectId: string, format: "json" | "markdown" | "csv") => {
+    const response = await fetch(`${API_BASE_URL}/export/${projectId}?format=${format}`);
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+    return await response.text();
+  }
 };

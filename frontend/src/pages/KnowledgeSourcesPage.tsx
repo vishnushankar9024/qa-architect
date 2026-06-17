@@ -46,7 +46,7 @@ export function KnowledgeSourcesPage({
   onSelectProject,
   onAddRepositorySource,
   onAddDocumentSource
-}: KnowledgeSourcesPageProps): JSX.Element {
+}: KnowledgeSourcesPageProps) {
   const [repoType, setRepoType] = useState(repositoryTypes[0]);
   const [repoUrl, setRepoUrl] = useState("");
   const [documentType, setDocumentType] = useState(documentTypes[0]);

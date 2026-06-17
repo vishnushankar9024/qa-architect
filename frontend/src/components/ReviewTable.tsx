@@ -36,7 +36,7 @@ function statusColor(status: ReviewableItem["status"]): "default" | "success" | 
   return "default";
 }
 
-export function ReviewTable({ items, onReview }: ReviewTableProps): JSX.Element {
+export function ReviewTable({ items, onReview }: ReviewTableProps) {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
