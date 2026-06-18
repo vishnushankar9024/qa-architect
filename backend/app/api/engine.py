@@ -9,11 +9,11 @@ router = APIRouter(prefix="/engine", tags=["engine"])
 
 
 def _project_context(project_id: str) -> tuple[str, list[str]]:
-    project = store.projects.get(project_id)
+    project = store.get_project(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     source_descriptors = []
-    for source in store.sources[project_id]:
+    for source in store.list_sources(project_id):
         metadata = source["metadata"]
         source_descriptors.append(
             metadata.get("url", metadata.get("fileName", source["sourceType"]))
@@ -79,6 +79,10 @@ def flow_discovery(project_id: str) -> dict[str, list[dict[str, str]]]:
 def run_pipeline(project_id: str) -> dict[str, list[dict[str, str]]]:
     project_name, source_descriptors = _project_context(project_id)
     output = pipeline.run_pipeline(project_name, source_descriptors)
+    store.log_event(
+        action="engine.pipeline.requested",
+        details={"projectId": project_id, "sourcesCount": len(source_descriptors)},
+    )
     return {
         "features": [item.model_dump() for item in output.features],
         "domains": [item.model_dump() for item in output.domains],

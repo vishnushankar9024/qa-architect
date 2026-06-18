@@ -9,7 +9,10 @@ QA Architect Portal v1 lives in:
 
 1. `cd backend`
 2. `pip install -r requirements.txt`
-3. `uvicorn app.main:app --reload`
+3. Set Mongo env vars for persistent mode:
+   - `export MONGO_URI="<your-mongodb-uri>"`
+   - `export MONGO_DB="qa_architect_portal"` (optional)
+4. `uvicorn app.main:app --reload`
 
 ## Run frontend
 

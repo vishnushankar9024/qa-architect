@@ -17,9 +17,9 @@ def _find_item(items: list[dict], item_id: str) -> dict | None:
 
 @router.post("/review", response_model=ReviewResponse)
 def review_item(request: ReviewRequest) -> ReviewResponse:
-    if request.projectId not in store.projects:
+    if not store.project_exists(request.projectId):
         raise HTTPException(status_code=404, detail="Project not found")
-    knowledge = store.knowledge_bases.get(request.projectId)
+    knowledge = store.get_knowledge_base(request.projectId)
     if not knowledge:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
 
@@ -52,7 +52,7 @@ def review_item(request: ReviewRequest) -> ReviewResponse:
         review_status = ReviewStatus.rejected
     else:
         review_status = ReviewStatus(item["status"])
-    store.review_log.append(
+    store.append_review_log(
         {
             "projectId": request.projectId,
             "artifactType": request.artifactType.value,
@@ -72,9 +72,19 @@ def review_item(request: ReviewRequest) -> ReviewResponse:
     ):
         all_items.extend(knowledge.get(key, []))
     if all_items and all(item["status"] == ReviewStatus.approved.value for item in all_items):
-        store.projects[request.projectId]["status"] = "Approved"
+        store.set_project_status(request.projectId, "Approved")
     else:
-        store.projects[request.projectId]["status"] = "Review"
+        store.set_project_status(request.projectId, "Review")
+    store.set_knowledge_base(request.projectId, knowledge)
+    store.log_event(
+        action="review.updated",
+        details={
+            "projectId": request.projectId,
+            "artifactType": request.artifactType.value,
+            "itemId": request.itemId,
+            "action": request.action,
+        },
+    )
 
     return ReviewResponse(
         projectId=request.projectId,

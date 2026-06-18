@@ -13,9 +13,9 @@ router = APIRouter(tags=["export"])
 def export_knowledge(
     project_id: str, format: str = Query(default="json", pattern="^(json|markdown|csv)$")
 ) -> PlainTextResponse:
-    if project_id not in store.projects:
+    if not store.project_exists(project_id):
         raise HTTPException(status_code=404, detail="Project not found")
-    knowledge = store.knowledge_bases.get(project_id)
+    knowledge = store.get_knowledge_base(project_id)
     if not knowledge:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
 
@@ -32,6 +32,10 @@ def export_knowledge(
         body = to_csv(knowledge_pack)
         media_type = "text/csv"
         extension = "csv"
+    store.log_event(
+        action="knowledge.exported",
+        details={"projectId": project_id, "format": format},
+    )
 
     headers = {
         "Content-Disposition": f'attachment; filename="knowledge-pack-{project_id}.{extension}"'

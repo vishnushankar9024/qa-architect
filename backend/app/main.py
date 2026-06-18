@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import engine, export, knowledge, projects, review
+from app.store import store
 
 app = FastAPI(title="QA Architect Portal API", version="1.0.0")
 
@@ -24,4 +25,4 @@ app.include_router(export.router)
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "persistence": store.backend_name}

@@ -7,10 +7,7 @@ client = TestClient(app)
 
 
 def setup_function() -> None:
-    store.projects.clear()
-    store.sources.clear()
-    store.knowledge_bases.clear()
-    store.review_log.clear()
+    store.reset_for_tests()
 
 
 def test_end_to_end_portal_flow() -> None:

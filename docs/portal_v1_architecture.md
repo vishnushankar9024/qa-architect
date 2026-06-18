@@ -49,12 +49,20 @@ Portal generation preserves stage order:
 
 The stage functions are centralized in `backend/app/services/pipeline.py` and exposed as legacy-compatible engine endpoints under `/engine/*`.
 
-### Data Model (in-memory)
+### Data Model (MongoDB primary)
 
 - `Project`: id, name, description, createdBy, createdDate, status
 - `KnowledgeSource`: repository/document registration metadata with status
 - `KnowledgeBase`: project + features/domains/flows/business_rules/traceability
 - `Review`: approve/reject/edit actions with reviewer audit
+
+MongoDB collections created and indexed at startup:
+
+- `projects`
+- `knowledge_sources`
+- `knowledge_bases`
+- `review_logs`
+- `app_logs`
 
 Generated artifact is stored as:
 

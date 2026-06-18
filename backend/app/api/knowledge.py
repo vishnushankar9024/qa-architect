@@ -12,7 +12,7 @@ router = APIRouter(tags=["knowledge"])
 
 
 def _get_knowledge_or_404(project_id: str) -> dict:
-    knowledge = store.knowledge_bases.get(project_id)
+    knowledge = store.get_knowledge_base(project_id)
     if not knowledge:
         raise HTTPException(status_code=404, detail="Knowledge base not generated")
     return knowledge
@@ -20,12 +20,12 @@ def _get_knowledge_or_404(project_id: str) -> dict:
 
 @router.post("/knowledge-base/{project_id}", response_model=KnowledgeBase)
 def generate_knowledge_base(project_id: str) -> KnowledgeBase:
-    project = store.projects.get(project_id)
+    project = store.get_project(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    project["status"] = ProjectStatus.knowledge_generation
+    store.set_project_status(project_id, ProjectStatus.knowledge_generation.value)
     source_descriptors = []
-    for source in store.sources[project_id]:
+    for source in store.list_sources(project_id):
         metadata = source["metadata"]
         source_descriptors.append(
             metadata.get("url", metadata.get("fileName", source["sourceType"]))
@@ -36,7 +36,7 @@ def generate_knowledge_base(project_id: str) -> KnowledgeBase:
         project={
             "id": project["id"],
             "name": project["name"],
-            "status": project["status"],
+            "status": ProjectStatus.knowledge_generation.value,
             "stages": list(PIPELINE_STAGES),
         },
         features=output.features,
@@ -45,20 +45,24 @@ def generate_knowledge_base(project_id: str) -> KnowledgeBase:
         business_rules=output.business_rules,
         traceability=output.traceability,
     )
-    store.knowledge_bases[project_id] = knowledge.model_dump(mode="json")
-    project["status"] = ProjectStatus.review
+    store.set_knowledge_base(project_id, knowledge.model_dump(mode="json"))
+    store.set_project_status(project_id, ProjectStatus.review.value)
+    store.log_event(
+        action="knowledge.generated",
+        details={"projectId": project_id, "sourcesCount": len(source_descriptors)},
+    )
 
     project_dir = store.project_path(project_id)
     artifact_path = project_dir / "knowledge-base.json"
     artifact_path.write_text(
-        json.dumps(store.knowledge_bases[project_id], indent=2), encoding="utf-8"
+        json.dumps(store.get_knowledge_base(project_id), indent=2), encoding="utf-8"
     )
-    return KnowledgeBase(**store.knowledge_bases[project_id])
+    return KnowledgeBase(**store.get_knowledge_base(project_id))
 
 
 @router.get("/knowledge-base/{project_id}", response_model=KnowledgeBase)
 def get_knowledge_base(project_id: str) -> KnowledgeBase:
-    if project_id not in store.projects:
+    if not store.project_exists(project_id):
         raise HTTPException(status_code=404, detail="Project not found")
     knowledge = _get_knowledge_or_404(project_id)
     return KnowledgeBase(**knowledge)
@@ -66,7 +70,7 @@ def get_knowledge_base(project_id: str) -> KnowledgeBase:
 
 @router.get("/knowledge-base/{project_id}/dashboard", response_model=DashboardMetrics)
 def get_dashboard_metrics(project_id: str) -> DashboardMetrics:
-    if project_id not in store.projects:
+    if not store.project_exists(project_id):
         raise HTTPException(status_code=404, detail="Project not found")
     knowledge = _get_knowledge_or_404(project_id)
     feature_count = len(knowledge["features"])
