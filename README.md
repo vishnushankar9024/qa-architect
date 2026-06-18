@@ -19,3 +19,7 @@ QA Architect Portal v1 lives in:
 1. `cd frontend`
 2. `npm install`
 3. `npm run dev`
+
+## Deploy (Cloud Run)
+
+Deployment instructions are in `DEPLOYMENT.md`.

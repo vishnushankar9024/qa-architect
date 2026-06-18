@@ -1,0 +1,82 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-f"
+      - "backend/Dockerfile"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_BACKEND_SERVICE}:$SHORT_SHA"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_BACKEND_SERVICE}:latest"
+      - "backend"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/${_BACKEND_SERVICE}:$SHORT_SHA"]
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/${_BACKEND_SERVICE}:latest"]
+
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "${_BACKEND_SERVICE}"
+      - "--project=$PROJECT_ID"
+      - "--region=${_REGION}"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+      - "--image=gcr.io/$PROJECT_ID/${_BACKEND_SERVICE}:$SHORT_SHA"
+      - "--memory=1Gi"
+      - "--timeout=600"
+      - "--set-env-vars=MONGO_DB=${_MONGO_DB}"
+      - "--set-secrets=MONGO_URI=${_MONGO_URI_SECRET}:latest,OPENAI_API_KEY=${_OPENAI_API_KEY_SECRET}:latest"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-f"
+      - "frontend/Dockerfile"
+      - "--build-arg"
+      - "VITE_API_BASE_URL=${_API_BASE_URL}"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_FRONTEND_SERVICE}:$SHORT_SHA"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_FRONTEND_SERVICE}:latest"
+      - "frontend"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/${_FRONTEND_SERVICE}:$SHORT_SHA"]
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/${_FRONTEND_SERVICE}:latest"]
+
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "${_FRONTEND_SERVICE}"
+      - "--project=$PROJECT_ID"
+      - "--region=${_REGION}"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+      - "--image=gcr.io/$PROJECT_ID/${_FRONTEND_SERVICE}:$SHORT_SHA"
+      - "--port=8080"
+      - "--memory=512Mi"
+      - "--timeout=300"
+
+images:
+  - "gcr.io/$PROJECT_ID/${_BACKEND_SERVICE}:$SHORT_SHA"
+  - "gcr.io/$PROJECT_ID/${_BACKEND_SERVICE}:latest"
+  - "gcr.io/$PROJECT_ID/${_FRONTEND_SERVICE}:$SHORT_SHA"
+  - "gcr.io/$PROJECT_ID/${_FRONTEND_SERVICE}:latest"
+
+substitutions:
+  _REGION: "us-central1"
+  _BACKEND_SERVICE: "qa-architect-api"
+  _FRONTEND_SERVICE: "qa-architect-portal"
+  _MONGO_URI_SECRET: "MONGO_URI"
+  _OPENAI_API_KEY_SECRET: "OPENAI_API_KEY"
+  _MONGO_DB: "qa_architect_portal"
+  _API_BASE_URL: "https://qa-architect-api-REPLACE.run.app"
